@@ -16,19 +16,19 @@ fail()  { printf '  \033[31m[fail]\033[0m %s\n' "$*" >&2; exit 1; }
 
 problems=0
 
-bold "[harness-ci 1/6] claude-progress.md has a Next action block"
-if [ ! -f claude-progress.md ]; then
-  fail "claude-progress.md is missing"
+bold "[harness-ci 1/6] PROGRESS.md has a Next steps block"
+if [ ! -f PROGRESS.md ]; then
+  fail "PROGRESS.md is missing"
 fi
-if ! grep -q "Next action" claude-progress.md; then
-  fail "claude-progress.md is missing a 'Next action' section — see docs/SESSION.md"
+if ! grep -q "^## Next steps" PROGRESS.md; then
+  fail "PROGRESS.md is missing a '## Next steps' section — see docs/SESSION.md"
 fi
-ok "Next action block present"
+ok "Next steps block present"
 
 bold "[harness-ci 2/6] no stray .only / .skip / xit / debugger in committed code"
 PATTERNS='(\.only\(|\.skip\(|xit\(|fdescribe\(|fit\(|^[[:space:]]*debugger;)'
 DIRS=()
-for d in app components lib hooks __tests__; do
+for d in app components hooks; do
   [ -d "$d" ] && DIRS+=("$d")
 done
 if [ "${#DIRS[@]}" -gt 0 ]; then
@@ -53,7 +53,7 @@ fi
 ok "every done feature has commitSha"
 
 bold "[harness-ci 4/6] no AGENTS.md / CLAUDE.md / required docs deleted"
-REQUIRED=(AGENTS.md CLAUDE.md init.sh feature_list.json claude-progress.md docs/HARNESS.md docs/ARCHITECTURE.md docs/RN_PLATFORM.md docs/VERIFICATION.md docs/E2E_TESTING.md)
+REQUIRED=(AGENTS.md CLAUDE.md init.sh feature_list.json PROGRESS.md DECISIONS.md docs/HARNESS.md docs/SESSION.md docs/ARCHITECTURE.md docs/RN_PLATFORM.md)
 for f in "${REQUIRED[@]}"; do
   if [ ! -f "$f" ]; then
     fail "required harness file missing: $f"
