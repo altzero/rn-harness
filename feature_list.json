@@ -1,0 +1,62 @@
+{
+  "$schema": "./scripts/feature_list.schema.json",
+  "project": "rn-harness",
+  "description": "A React Native (Expo) starter wired for harness-engineering workflows. Features are the scope primitive — agents work on exactly one in_progress feature at a time.",
+  "states": ["todo", "in_progress", "blocked", "done"],
+  "wipLimit": 1,
+  "features": [
+    {
+      "id": "harness-001",
+      "title": "Harness scaffolding present and verified",
+      "category": "harness",
+      "description": "AGENTS.md, CLAUDE.md, init.sh, feature_list.json, claude-progress.md, and docs/ exist. init.sh exits 0 on a fresh clone.",
+      "verification": [
+        "Run ./init.sh from a fresh clone; it exits 0",
+        "Run npm run verify; it exits 0",
+        "AGENTS.md, CLAUDE.md, docs/HARNESS.md, docs/ARCHITECTURE.md are all present",
+        "feature_list.json validates against scripts/feature-list-check.js"
+      ],
+      "status": "in_progress",
+      "passes": false,
+      "owner": "claude",
+      "commitSha": null,
+      "notes": "Initial bring-up. Mark done once npm install completes locally and verify passes once."
+    },
+    {
+      "id": "ui-001",
+      "title": "Home screen shows project name and harness status",
+      "category": "ui",
+      "description": "The default tab renders the project name, the count of done vs total features from feature_list.json, and the last claude-progress.md headline. This proves the JS bundle, file-system access pattern, and routing are all wired up.",
+      "verification": [
+        "Start the app: npm run start",
+        "Open on iOS sim, Android emulator, or web",
+        "Verify the home tab shows the project name 'rn-harness'",
+        "Verify the home tab shows feature counts that match feature_list.json",
+        "Snapshot test covers the rendered counts"
+      ],
+      "status": "todo",
+      "passes": false,
+      "owner": null,
+      "commitSha": null,
+      "notes": "Read the file at build/bundle time, not runtime — RN's file system is not Node's."
+    },
+    {
+      "id": "ui-002",
+      "title": "Feature list screen — view-only list of all features and their status",
+      "category": "ui",
+      "description": "A second tab renders every feature from feature_list.json with its id, title, status, and a coloured status pill. Read-only; editing the list is out of scope for this feature.",
+      "verification": [
+        "Tab is reachable from the bottom tab bar",
+        "All features in feature_list.json appear",
+        "Status pill colour matches: todo=grey, in_progress=blue, blocked=red, done=green",
+        "RTL layout renders correctly (toggle device language to Arabic in the sim)",
+        "Component is covered by a render test"
+      ],
+      "status": "todo",
+      "passes": false,
+      "owner": null,
+      "commitSha": null,
+      "notes": "Demonstrates list virtualisation discipline — use FlashList or FlatList, never .map over a long array of Views."
+    }
+  ]
+}
