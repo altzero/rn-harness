@@ -41,8 +41,9 @@ for (const [i, f] of data.features.entries()) {
   for (const k of REQUIRED_FIELDS) {
     if (!(k in f)) die(`${where} missing required field "${k}"`);
   }
-  if (!/^[a-z0-9-]+$/.test(f.id)) {
-    die(`${where} id must be lowercase kebab-case (got "${f.id}")`);
+  // Canonical id: <category>-<NNN>; see docs/HARNESS.md → Naming standard.
+  if (!/^[a-z][a-z0-9]*(-[a-z][a-z0-9]*)*-\d{3}$/.test(f.id)) {
+    die(`${where} id "${f.id}" doesn't match <category>-<NNN> (3-digit zero-padded)`);
   }
   if (seenIds.has(f.id)) die(`${where} duplicate id "${f.id}"`);
   seenIds.add(f.id);

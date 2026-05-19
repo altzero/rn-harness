@@ -12,18 +12,13 @@
     "lint": "expo lint",
     "typecheck": "tsc --noEmit",
     "test": "jest --passWithNoTests",
-    "test:ci": "jest --ci --passWithNoTests --reporters=default",
     "verify": "bash scripts/verify.sh",
     "harness:init": "bash init.sh",
     "harness:features": "node scripts/feature-list-check.js",
     "harness:clean-state": "bash scripts/check-clean-state.sh",
     "sim:ios": "bash scripts/sim-ios.sh",
-    "sim:ios:screenshot": "bash scripts/sim-ios.sh screenshot",
     "sim:android": "bash scripts/sim-android.sh",
-    "sim:android:screenshot": "bash scripts/sim-android.sh screenshot",
-    "e2e": "bash scripts/run-maestro.sh .maestro/flows/home.yaml",
-    "e2e:ios": "bash scripts/sim-ios.sh && bash scripts/run-maestro.sh .maestro/flows/home.yaml",
-    "e2e:android": "bash scripts/sim-android.sh && bash scripts/run-maestro.sh .maestro/flows/home.yaml"
+    "e2e": "bash scripts/run-maestro.sh .maestro/flows/home.yaml"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
