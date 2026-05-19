@@ -54,11 +54,11 @@ node scripts/feature-list-check.js || fail "feature_list.json is invalid"
 ok "feature_list.json parses and is well-formed"
 
 bold "[init 7/7] previous session handoff"
-if [ -f claude-progress.md ]; then
+if [ -f PROGRESS.md ]; then
   echo
-  echo "  Last 30 lines of claude-progress.md (read this before acting):"
+  echo "  PROGRESS.md (read this before acting):"
   echo "  ----------------------------------------------------------------"
-  tail -n 30 claude-progress.md | sed 's/^/  | /'
+  sed 's/^/  | /' PROGRESS.md
   echo "  ----------------------------------------------------------------"
 fi
 

@@ -1,82 +1,93 @@
 {
-  "$schema": "./scripts/feature_list.schema.json",
   "project": "rn-harness",
-  "description": "A React Native (Expo) starter wired for harness-engineering workflows. Features are the scope primitive — agents work on exactly one in_progress feature at a time.",
-  "states": ["todo", "in_progress", "blocked", "done"],
   "wipLimit": 1,
   "features": [
     {
       "id": "harness-001",
-      "title": "Harness scaffolding present and verified",
+      "title": "Initial harness setup",
       "category": "harness",
-      "description": "AGENTS.md, CLAUDE.md, init.sh, feature_list.json, claude-progress.md, and docs/ exist. init.sh exits 0 on a fresh clone.",
+      "description": "AGENTS.md, CLAUDE.md, init.sh, feature_list.json, PROGRESS.md, and docs/ exist. init.sh exits 0 on a fresh clone.",
       "verification": [
         "Run ./init.sh from a fresh clone; it exits 0",
         "Run npm run verify; it exits 0",
-        "AGENTS.md, CLAUDE.md, docs/HARNESS.md, docs/ARCHITECTURE.md are all present",
         "feature_list.json validates against scripts/feature-list-check.js"
       ],
       "status": "done",
       "passes": true,
       "owner": "claude",
       "commitSha": "d04fc81",
-      "notes": "Closed 2026-05-19. ./init.sh ran end-to-end on a fresh checkout (1052 packages installed, ~1m). npm run verify all four steps green at SHA d04fc81: tsc clean, expo lint clean, 6/6 jest tests pass, feature_list.json schema valid."
+      "notes": "Closed via PR #1."
+    },
+    {
+      "id": "e2e-001",
+      "title": "Maestro end-to-end verification",
+      "category": "verification",
+      "description": "Maestro toolchain wired into the harness so feature verification lists can include real-simulator runs. Smoke flow exercises the default Expo home tab.",
+      "verification": [
+        "Install maestro: curl -Ls 'https://get.maestro.mobile.dev' | bash",
+        "Boot an iOS simulator: npm run sim:ios",
+        "Start the app on the sim: npm run ios",
+        "Run the flow: npm run e2e",
+        "Confirm exit code 0 and screenshot/JUnit artifacts in tmp/diagnostics/"
+      ],
+      "status": "todo",
+      "passes": false,
+      "owner": null,
+      "commitSha": null,
+      "notes": "Scaffolding landed via PR #2. Flipping to done needs an actual simulator run."
     },
     {
       "id": "ui-001",
       "title": "Home screen shows project name and harness status",
       "category": "ui",
-      "description": "The default tab renders the project name, the count of done vs total features from feature_list.json, and the last claude-progress.md headline. This proves the JS bundle, file-system access pattern, and routing are all wired up.",
+      "description": "Default tab renders the project name and feature counts read from feature_list.json at bundle time.",
       "verification": [
-        "Start the app: npm run start",
-        "Open on iOS sim, Android emulator, or web",
-        "Verify the home tab shows the project name 'rn-harness'",
-        "Verify the home tab shows feature counts that match feature_list.json",
-        "Snapshot test covers the rendered counts"
+        "npm run start; open on iOS sim, Android emulator, or web",
+        "Home tab shows 'rn-harness' and the done/total feature counts",
+        "Render test covers the counts"
       ],
       "status": "todo",
       "passes": false,
       "owner": null,
-      "commitSha": null,
-      "notes": "Read the file at build/bundle time, not runtime — RN's file system is not Node's."
+      "commitSha": null
     },
     {
       "id": "ui-002",
-      "title": "Feature list screen — view-only list of all features and their status",
+      "title": "Feature list screen",
       "category": "ui",
-      "description": "A second tab renders every feature from feature_list.json with its id, title, status, and a coloured status pill. Read-only; editing the list is out of scope for this feature.",
+      "description": "Second tab renders every feature with id, title, status, and a coloured status pill. Read-only.",
       "verification": [
-        "Tab is reachable from the bottom tab bar",
+        "Tab reachable from the bottom tab bar",
         "All features in feature_list.json appear",
-        "Status pill colour matches: todo=grey, in_progress=blue, blocked=red, done=green",
-        "RTL layout renders correctly (toggle device language to Arabic in the sim)",
-        "Component is covered by a render test"
+        "Status pill colours: todo=grey, in_progress=blue, blocked=red, done=green",
+        "RTL renders correctly (toggle device language to Arabic)",
+        "Render test covers the rendered list"
       ],
       "status": "todo",
       "passes": false,
       "owner": null,
       "commitSha": null,
-      "notes": "Demonstrates list virtualisation discipline — use FlashList or FlatList, never .map over a long array of Views."
+      "notes": "Use FlatList or FlashList — never .map over a long array of Views."
     },
     {
-      "id": "e2e-001",
-      "title": "Maestro smoke flow runs on a local simulator",
-      "category": "verification",
-      "description": "Scaffold the Maestro toolchain into the harness so feature verification lists can include real-simulator runs. The smoke flow exercises the default Expo home tab end-to-end (bundle loads, scaffold text visible, tab navigation works) and drops artifacts in tmp/diagnostics/.",
+      "id": "harness-002",
+      "title": "Simplify harness to doc-aligned form",
+      "category": "harness",
+      "description": "Strip the project back to the lecture-prescribed minimum: split claude-progress.md into PROGRESS.md + DECISIONS.md, delete speculative lib/__tests__, delete redundant docs (UI/VERIFICATION/WHY_HARNESS_FOR_RN/E2E_TESTING), slim survivor docs, drop redundant npm scripts.",
       "verification": [
-        "Install maestro: curl -Ls 'https://get.maestro.mobile.dev' | bash",
-        "Boot an iOS simulator: npm run sim:ios",
-        "Start the app on the sim: npm run ios (or open in Expo Go)",
-        "Run the flow: npm run e2e (or npm run e2e:ios)",
-        "Confirm exit code is 0",
-        "Confirm a screenshot artifact appears under tmp/diagnostics/ named ...-maestro-home-*.png",
-        "Confirm the JUnit report appears under tmp/diagnostics/ named ...-maestro-home.junit.xml"
+        "claude-progress.md is gone; PROGRESS.md and DECISIONS.md exist",
+        "lib/, __tests__/, scripts/feature_list.schema.json are removed",
+        "docs/{UI,VERIFICATION,WHY_HARNESS_FOR_RN,E2E_TESTING}.md are removed",
+        "docs/HARNESS.md, docs/SESSION.md, docs/ARCHITECTURE.md, docs/RN_PLATFORM.md are under ~100 lines each",
+        "npm run verify exits 0",
+        "./init.sh exits 0 (tails PROGRESS.md)",
+        "scripts/check-clean-state.sh passes"
       ],
-      "status": "todo",
+      "status": "in_progress",
       "passes": false,
-      "owner": null,
+      "owner": "claude",
       "commitSha": null,
-      "notes": "Scaffolding (config.yaml, flows/home.yaml, run-maestro.sh, sim-ios.sh, sim-android.sh, npm scripts) landed on branch feat/e2e-001-maestro. The verification list is intentionally simulator-bound and was not exercised in the scaffolding session — an agent with a Mac + Xcode picks this up to flip the feature to done."
+      "notes": "Once merged, feat/ci-001-actions needs to rebase and update scripts/harness-ci-checks.sh to look at PROGRESS.md instead of claude-progress.md."
     }
   ]
 }

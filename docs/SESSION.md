@@ -1,45 +1,58 @@
-# docs/SESSION.md — End-of-session checklist
+# docs/SESSION.md — Session lifecycle
 
-Run through this every time you stop, even if you're "just stepping away."
-A session that ends cleanly costs the next session 60 seconds to resume; a
-session that ends in the middle of work costs 30 minutes of archaeology.
+## Continuity checklist (Lecture 05)
 
-## The checklist
+Before ending a session, all four must be true:
 
-- [ ] **Baseline is green.** `npm run verify` exits 0. If it is red, either
-      fix it or open an entry in `claude-progress.md` Known Issues with the
-      exact failing output and the next debugging step.
-- [ ] **Working tree explained.** Either commit it, or each modified file is
-      mentioned in `claude-progress.md` with a one-line reason.
-- [ ] **Feature state is current.** `feature_list.json` reflects reality. If
-      you finished the feature: `status: "done"`, `passes: true`, commit SHA
-      filled in.
-- [ ] **Progress log is current.** `claude-progress.md`:
-        - The **Next action** block at the top is rewritten to point at the
-          actual next thing.
-        - A new "Session YYYY-MM-DD" entry is appended with what you did,
-          verify result, and what to watch out for.
-- [ ] **Clean state script passes.** `npm run harness:clean-state`.
-- [ ] **No surprise edits.** Run `git status` and look at the list. Did you
-      change something you didn't intend? Stash or revert it.
-- [ ] **No stray debug code.** `console.log`, `debugger`, `.only`, `xit`,
-      `// FIXME` without a feature_list.json entry. The clean-state script
-      catches most of these.
-- [ ] **Tmp files clean.** `tmp/` should contain only diagnostics referenced
-      from a progress entry.
+- [ ] A fresh agent can identify recent work in under five minutes
+      (`git log` + `gh pr list` are honest).
+- [ ] The startup path is documented (`./init.sh` runs clean).
+- [ ] Unfinished work is identified (`feature_list.json[].status`
+      is current).
+- [ ] The next best task is visible without reading chat logs
+      (`PROGRESS.md` → *Next steps*).
 
-## When you've broken the build
+If any is false, fix it before you stop.
 
-If you have to stop mid-feature with the baseline red, that is a *bad* state
-but a *recoverable* one. Required steps:
+## End-of-session steps
 
-1. Set the in-progress feature's `status` to `blocked` in
+1. `npm run verify` — must be green.
+2. Update `feature_list.json` for any features you touched (status,
+   `passes`, `commitSha`).
+3. Update `PROGRESS.md` *Next steps* so the next session can begin
+   cold.
+4. Append any non-obvious decisions to `DECISIONS.md`.
+5. Commit; push.
+6. **Open a PR** if the branch is reviewable. Title plain English
+   (no feature-ID prefix — that goes in the body). The body
+   carries the per-session detail that used to live in a Sessions
+   log; once the PR is open, you don't also need to write that log
+   elsewhere.
+7. Run `npm run harness:clean-state`.
+
+## Opening a PR — body template
+
+```
+<one-line context>
+
+## Summary
+- bullets on what changed
+
+## Verification status
+- what's been run locally / in CI
+- what's left for the next session
+
+## To test locally
+- exact commands
+
+## Merge order (if stacked)
+- upstream / downstream PRs
+```
+
+## If you stop mid-feature with the baseline red
+
+1. Move the in-flight feature's `status` to `blocked` in
    `feature_list.json`.
-2. In `claude-progress.md` under Known Issues, write a paragraph with:
-   the exact failing command, the last 30 lines of output, your hypothesis,
-   and the next step you would have taken.
-3. Commit with a message starting `wip(blocked): …` so the SHA is
-   discoverable.
-
-The next session reads this and starts at step "next step you would have
-taken," not at "what just happened?"
+2. Add a *Known issues* line in `PROGRESS.md` with the failing
+   command, the last 30 lines of output, and your hypothesis.
+3. Commit with `wip(blocked): …`.
