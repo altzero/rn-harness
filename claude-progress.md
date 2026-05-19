@@ -17,14 +17,14 @@ status). To pick it up:
 
 There are also two open branches with unmerged work:
 
-- **feat/e2e-maestro** — adds Maestro toolchain + sample flow + sim helpers.
+- **feat/e2e-001-maestro** — adds Maestro toolchain + sample flow + sim helpers.
   Conflicts with this branch on `package.json`, `claude-progress.md`, and
   `feature_list.json`. Merge or rebase before continuing.
-- **feat/ci-harness** — adds GitHub Actions for static + e2e gates (planned).
+- **feat/ci-001-actions** — adds GitHub Actions for static + e2e gates (planned).
 
 ## Current state
 
-- **Branch:** feat/harness-001-close
+- **Branch:** chore/harness-001-close
 - **Baseline verify:** GREEN at d04fc81
 - **In progress:** none (WIP=0, free to pick up ui-001)
 - **Blocked:** none
@@ -87,8 +87,8 @@ _(none yet)_
   Committed lockfile + dep cleanup at d04fc81. Flipped harness-001 to
   `done` with that SHA.
 - Verify: green at d04fc81 (tsc, expo lint, 6 jest tests, schema).
-- Left: WIP=0; next = ui-001. Two open branches (feat/e2e-maestro,
-  feat/ci-harness) need merging or rebasing before ui-001 work.
+- Left: WIP=0; next = ui-001. Two open branches (feat/e2e-001-maestro,
+  feat/ci-001-actions) need merging or rebasing before ui-001 work.
 - Watch out: node v23.5.0 prints an EBADENGINE warning for
   `eslint-visitor-keys` (wants Node 20/22/24). Benign — install completes
   and verify passes. If we want to silence it, downgrade to Node 22 LTS.
