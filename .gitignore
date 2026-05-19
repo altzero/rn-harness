@@ -41,3 +41,10 @@ app-example
 # generated native folders
 /ios
 /android
+
+# harness diagnostics — per-session screenshots, logs, junit reports
+tmp/diagnostics/
+
+# Maestro run artifacts that live outside the repo (~/.maestro/) — not
+# ignored here, just noted: scripts/run-maestro.sh copies the relevant
+# artifacts into tmp/diagnostics/ for in-repo discoverability.

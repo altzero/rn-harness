@@ -120,31 +120,52 @@ differently from Node. They are necessary, not sufficient.
 
 ---
 
-## Path C — Detox / Maestro for full flows
+## Path C — Maestro (scaffolded) and Detox (not scaffolded)
 
-Not scaffolded in this repo yet. Recommended when you have a
-multi-screen flow with gestures, async data, or auth state.
+### Maestro — the default end-to-end path
 
-### Maestro (lighter weight)
+This is the path the harness recommends and is wired up out of the box.
+The scaffold lives at:
 
-```yaml
-# .maestro/ui-001-home.yaml
-appId: com.anonymous.rnharness
----
-- launchApp
-- assertVisible: "rn-harness"
-- assertVisible:
-    text: "done"
-    enabled: true
-- takeScreenshot: ui-001-home
-```
+- `.maestro/config.yaml` — shared appId, retry policy
+- `.maestro/flows/home.yaml` — the smoke flow (asserts the default home tab
+  renders and that tab navigation works)
+- `.maestro/README.md` — authoring conventions
+- `scripts/run-maestro.sh` — harness wrapper around `maestro test`
+  (installs check, device check, structured `[ok]/[fail]` output, copies
+  screenshots + JUnit XML into `tmp/diagnostics/`)
+- `scripts/sim-ios.sh`, `scripts/sim-android.sh` — sim/emulator helpers
+- npm scripts: `npm run e2e`, `npm run e2e:ios`, `npm run e2e:android`,
+  `npm run sim:ios[:screenshot]`, `npm run sim:android[:screenshot]`
+
+Smoke run:
 
 ```bash
-maestro test .maestro/ui-001-home.yaml
+# one-time
+curl -Ls 'https://get.maestro.mobile.dev' | bash
+
+# every time
+npm run sim:ios         # boot a sim
+npm run ios             # build/install/launch the app on it
+npm run e2e             # run the smoke flow → exit 0, screenshot in tmp/diagnostics/
 ```
 
-Adding Maestro should itself be a feature in `feature_list.json` (e.g.
-`infra-001 — add Maestro to CI`), so its setup is scoped under WIP=1.
+Authoring a new flow:
+
+```yaml
+# .maestro/flows/<feature-id>.yaml
+appId: ${APP_ID:-host.exp.exponent}
+---
+- launchApp:
+    clearState: false
+- assertVisible: "..."          # one assertion per verification-list item
+- tapOn: "..."
+- takeScreenshot: <feature-id>  # always end with a screenshot for the agent
+```
+
+Then add the invocation (`npm run e2e -- .maestro/flows/<feature-id>.yaml`
+or a dedicated npm script) to the feature's `verification[]` array in
+`feature_list.json`.
 
 ### Detox (heavier, more powerful)
 

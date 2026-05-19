@@ -1,0 +1,15 @@
+# Shared config for Maestro flows in this repo.
+#
+# Maestro picks this up automatically when flows live under .maestro/flows.
+# Override per-run with environment variables (see scripts/run-maestro.sh).
+
+# Default appId for flows that target the running Expo dev client.
+# In Expo Go the appId is host.exp.exponent. For a dev/preview build,
+# set ios.bundleIdentifier + android.package in app.json and update this
+# value to match.
+appId: host.exp.exponent
+
+# How long Maestro should wait for the app to launch / elements to appear
+# before failing. Generous on purpose — RN cold start in a fresh sim can
+# be 5–10s.
+maxRetries: 2
