@@ -6,7 +6,7 @@
 
 ## Next action (read this before doing anything else)
 
-You are on branch `feat/e2e-maestro`. The Maestro toolchain has been
+You are on branch `feat/e2e-001-maestro`. The Maestro toolchain has been
 scaffolded but **not yet exercised** on a real simulator (the scaffolding
 session ran on a machine without Xcode). To pick this up:
 
@@ -19,14 +19,14 @@ session ran on a machine without Xcode). To pick this up:
 5. Run the flow: `npm run e2e`. Confirm exit 0 and a screenshot in
    `tmp/diagnostics/`.
 6. Flip `e2e-001` to `status: "done"`, `passes: true`, record the commit
-   SHA, then merge `feat/e2e-maestro` into `main`.
+   SHA, then merge `feat/e2e-001-maestro` into `main`.
 
 Once `e2e-001` is done, the next available work is still `harness-001`
 (initial bring-up verification) → then `ui-001`.
 
 ## Current state
 
-- **Branch:** feat/e2e-maestro (off main at d74a40c)
+- **Branch:** feat/e2e-001-maestro (off main at d74a40c)
 - **Baseline verify:** unknown (not yet run end-to-end)
 - **In progress:** `harness-001` (Harness scaffolding present and verified)
 - **Blocked:** none
@@ -82,10 +82,10 @@ _(none yet)_
 
 ## Sessions
 
-### Session 2026-05-19 (agent: claude) — cut feat/e2e-maestro
+### Session 2026-05-19 (agent: claude) — cut feat/e2e-001-maestro
 
 - Picked up: e2e-001 (scaffolding portion only)
-- Did: cut branch `feat/e2e-maestro`. Added `.maestro/{config.yaml,README.md,flows/home.yaml}`,
+- Did: cut branch `feat/e2e-001-maestro`. Added `.maestro/{config.yaml,README.md,flows/home.yaml}`,
   `scripts/{run-maestro.sh,sim-ios.sh,sim-android.sh}`, npm scripts
   (`sim:ios`, `sim:android`, `e2e`, `e2e:ios`, `e2e:android`), and the
   `e2e-001` feature entry. Updated decisions log and Next action.

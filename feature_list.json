@@ -76,7 +76,7 @@
       "passes": false,
       "owner": null,
       "commitSha": null,
-      "notes": "Scaffolding (config.yaml, flows/home.yaml, run-maestro.sh, sim-ios.sh, sim-android.sh, npm scripts) landed on branch feat/e2e-maestro. The verification list is intentionally simulator-bound and was not exercised in the scaffolding session — an agent with a Mac + Xcode picks this up to flip the feature to done."
+      "notes": "Scaffolding (config.yaml, flows/home.yaml, run-maestro.sh, sim-ios.sh, sim-android.sh, npm scripts) landed on branch feat/e2e-001-maestro. The verification list is intentionally simulator-bound and was not exercised in the scaffolding session — an agent with a Mac + Xcode picks this up to flip the feature to done."
     }
   ]
 }
