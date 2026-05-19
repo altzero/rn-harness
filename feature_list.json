@@ -57,6 +57,26 @@
       "owner": null,
       "commitSha": null,
       "notes": "Demonstrates list virtualisation discipline — use FlashList or FlatList, never .map over a long array of Views."
+    },
+    {
+      "id": "e2e-001",
+      "title": "Maestro smoke flow runs on a local simulator",
+      "category": "verification",
+      "description": "Scaffold the Maestro toolchain into the harness so feature verification lists can include real-simulator runs. The smoke flow exercises the default Expo home tab end-to-end (bundle loads, scaffold text visible, tab navigation works) and drops artifacts in tmp/diagnostics/.",
+      "verification": [
+        "Install maestro: curl -Ls 'https://get.maestro.mobile.dev' | bash",
+        "Boot an iOS simulator: npm run sim:ios",
+        "Start the app on the sim: npm run ios (or open in Expo Go)",
+        "Run the flow: npm run e2e (or npm run e2e:ios)",
+        "Confirm exit code is 0",
+        "Confirm a screenshot artifact appears under tmp/diagnostics/ named ...-maestro-home-*.png",
+        "Confirm the JUnit report appears under tmp/diagnostics/ named ...-maestro-home.junit.xml"
+      ],
+      "status": "todo",
+      "passes": false,
+      "owner": null,
+      "commitSha": null,
+      "notes": "Scaffolding (config.yaml, flows/home.yaml, run-maestro.sh, sim-ios.sh, sim-android.sh, npm scripts) landed on branch feat/e2e-001-maestro. The verification list is intentionally simulator-bound and was not exercised in the scaffolding session — an agent with a Mac + Xcode picks this up to flip the feature to done."
     }
   ]
 }

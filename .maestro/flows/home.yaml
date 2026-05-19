@@ -1,0 +1,42 @@
+# .maestro/flows/home.yaml
+#
+# Verifies the default Expo Router home tab loads and renders its scaffold
+# content. Used by feature `e2e-001` as the smoke flow that proves the
+# Maestro toolchain itself is wired up.
+#
+# Once feature `ui-001` is implemented (home tab shows project name and
+# harness status), this flow should be extended — or replaced with
+# ui-001.yaml — to assert on the harness-specific UI.
+#
+# Override the appId with: APP_ID=com.example.rnharness maestro test …
+
+appId: ${APP_ID:-host.exp.exponent}
+---
+- launchApp:
+    clearState: false
+    stopApp: true
+
+# Wait for the JS bundle to finish loading. The Welcome! string is the
+# top-level title on the default Expo scaffold home tab.
+- assertVisible: "Welcome!"
+
+# Scaffold step labels — proves the bundle executed, ParallaxScrollView
+# rendered, and the typography components mounted.
+- assertVisible: "Step 1: Try it"
+- assertVisible: "Step 2: Explore"
+- assertVisible: "Step 3: Get a fresh start"
+
+# Tab bar — proves the bottom Tabs navigator mounted.
+- assertVisible:
+    text: "Home"
+- assertVisible:
+    text: "Explore"
+
+# Tap the Explore tab and assert we navigated. This exercises router
+# state, not just the static home render.
+- tapOn: "Explore"
+- assertVisible: "Explore"
+
+# Drop a screenshot for the agent / human to inspect. The wrapper script
+# copies this into tmp/diagnostics/ with a timestamped name.
+- takeScreenshot: home
