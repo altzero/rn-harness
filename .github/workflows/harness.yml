@@ -1,0 +1,130 @@
+name: harness
+
+# Runs the harness's own gates on every push and PR.
+#
+# Two jobs:
+#   - static: typecheck + lint + jest + schema + harness invariants.
+#             Required. Fast (~1 min on ubuntu-latest).
+#   - e2e-ios: boot an iOS sim, build the app, run the Maestro smoke flow.
+#             Advisory at first (continue-on-error: true) — promote to
+#             required once it has been green for a stretch.
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+concurrency:
+  # Cancel superseded runs on the same ref so PRs don't queue up macOS minutes.
+  group: harness-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  static:
+    name: static (typecheck / lint / jest / harness invariants)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'   # avoids EBADENGINE for eslint-visitor-keys (wants 20/22/24)
+          cache: 'npm'
+
+      - name: install
+        run: npm ci
+
+      - name: typecheck
+        run: npm run typecheck
+
+      - name: lint
+        run: npm run lint
+
+      - name: tests
+        run: npm test -- --ci
+
+      - name: feature_list.json schema + WIP=1
+        run: node scripts/feature-list-check.js
+
+      - name: harness invariants
+        run: bash scripts/harness-ci-checks.sh
+
+  e2e-ios:
+    name: e2e-ios (Maestro on a real iOS simulator)
+    needs: static
+    # Only run e2e when label "e2e" is on the PR, or on main pushes.
+    # Edit this condition once the e2e job is reliably green to make it
+    # the default on every PR.
+    if: |
+      github.event_name == 'push' ||
+      contains(github.event.pull_request.labels.*.name, 'e2e')
+    runs-on: macos-latest
+    continue-on-error: true   # advisory while we shake it out; remove once stable
+    timeout-minutes: 30
+    env:
+      # Override per-flow via the .maestro/config.yaml default if you change
+      # this. Set ios.bundleIdentifier in app.json to match.
+      APP_ID: com.anonymous.rnharness
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: install JS deps
+        run: npm ci
+
+      - name: install Maestro
+        run: |
+          curl -Ls 'https://get.maestro.mobile.dev' | bash
+          echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
+
+      - name: boot iOS simulator
+        run: bash scripts/sim-ios.sh
+
+      # --- Build the app for the simulator ---
+      # Two paths exist; pick one and document the choice:
+      #
+      #   (1) expo prebuild + xcodebuild — fully local, slowest, most accurate.
+      #       Requires `ios.bundleIdentifier` set in app.json.
+      #
+      #   (2) eas build --profile development --local + eas build:run --latest
+      #       — uses EAS but stays on the runner. Requires EXPO_TOKEN secret.
+      #
+      # The job below uses path (1). To switch to (2), replace this step.
+      - name: build app for simulator (prebuild + xcodebuild)
+        run: |
+          npx expo prebuild --platform ios --clean --non-interactive
+          cd ios
+          # Find the workspace produced by prebuild
+          WS=$(ls -d *.xcworkspace | head -n 1)
+          SCHEME=$(basename "$WS" .xcworkspace)
+          xcodebuild \
+            -workspace "$WS" \
+            -scheme "$SCHEME" \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            -derivedDataPath build \
+            -quiet
+          APP_PATH=$(find build/Build/Products/Debug-iphonesimulator -maxdepth 1 -name "*.app" -print -quit)
+          echo "APP_PATH=$APP_PATH" >> "$GITHUB_ENV"
+
+      - name: install + launch on booted sim
+        run: |
+          xcrun simctl install booted "$APP_PATH"
+          xcrun simctl launch booted "$APP_ID"
+
+      - name: run Maestro smoke flow
+        run: bash scripts/run-maestro.sh .maestro/flows/home.yaml
+
+      - name: upload diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: maestro-ios-${{ github.run_id }}
+          path: tmp/diagnostics/
+          if-no-files-found: warn
+          retention-days: 14
