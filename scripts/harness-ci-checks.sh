@@ -16,7 +16,7 @@ fail()  { printf '  \033[31m[fail]\033[0m %s\n' "$*" >&2; exit 1; }
 
 problems=0
 
-bold "[harness-ci 1/5] claude-progress.md has a Next action block"
+bold "[harness-ci 1/6] claude-progress.md has a Next action block"
 if [ ! -f claude-progress.md ]; then
   fail "claude-progress.md is missing"
 fi
@@ -25,7 +25,7 @@ if ! grep -q "Next action" claude-progress.md; then
 fi
 ok "Next action block present"
 
-bold "[harness-ci 2/5] no stray .only / .skip / xit / debugger in committed code"
+bold "[harness-ci 2/6] no stray .only / .skip / xit / debugger in committed code"
 PATTERNS='(\.only\(|\.skip\(|xit\(|fdescribe\(|fit\(|^[[:space:]]*debugger;)'
 DIRS=()
 for d in app components lib hooks __tests__; do
@@ -41,7 +41,7 @@ if [ "${#DIRS[@]}" -gt 0 ]; then
 fi
 ok "no stray debug markers"
 
-bold "[harness-ci 3/5] every 'done' feature has a non-empty commitSha"
+bold "[harness-ci 3/6] every 'done' feature has a non-empty commitSha"
 MISSING=$(node -e '
   const f = JSON.parse(require("fs").readFileSync("feature_list.json","utf8"));
   const bad = f.features.filter(x => x.status === "done" && (!x.commitSha || x.commitSha.length < 7));
@@ -52,7 +52,7 @@ if [ -n "$MISSING" ]; then
 fi
 ok "every done feature has commitSha"
 
-bold "[harness-ci 4/5] no AGENTS.md / CLAUDE.md / required docs deleted"
+bold "[harness-ci 4/6] no AGENTS.md / CLAUDE.md / required docs deleted"
 REQUIRED=(AGENTS.md CLAUDE.md init.sh feature_list.json claude-progress.md docs/HARNESS.md docs/ARCHITECTURE.md docs/RN_PLATFORM.md docs/VERIFICATION.md docs/E2E_TESTING.md)
 for f in "${REQUIRED[@]}"; do
   if [ ! -f "$f" ]; then
@@ -61,13 +61,37 @@ for f in "${REQUIRED[@]}"; do
 done
 ok "all required harness files present"
 
-bold "[harness-ci 5/5] no committed .env or signing material"
+bold "[harness-ci 5/6] no committed .env or signing material"
 LEAKS=$(git ls-files | grep -E '(\.env$|\.env\.|\.p12$|\.jks$|\.mobileprovision$|\.key$)' || true)
 if [ -n "$LEAKS" ]; then
   echo "$LEAKS" | sed 's/^/    /'
   fail "secrets-shaped files appear in the repo — add to .gitignore and rotate"
 fi
 ok "no secret-shaped files committed"
+
+bold "[harness-ci 6/6] branch name follows naming standard"
+# In CI prefer GITHUB_HEAD_REF (PR source branch) or GITHUB_REF_NAME.
+# Locally, fall back to `git branch --show-current`.
+BRANCH="${GITHUB_HEAD_REF:-${GITHUB_REF_NAME:-$(git branch --show-current 2>/dev/null || echo '')}}"
+if [ -z "$BRANCH" ]; then
+  ok "branch name not detectable (detached HEAD or no git) — skipped"
+elif echo "$BRANCH" | grep -qE '^(main|master|develop)$'; then
+  ok "branch '$BRANCH' is a long-lived trunk — skipped"
+elif echo "$BRANCH" | grep -qE '^(release|hotfix)/'; then
+  ok "branch '$BRANCH' is a release/hotfix branch — skipped"
+elif ! echo "$BRANCH" | grep -qE '^(feat|fix|chore|docs)/[a-z][a-z0-9]*(-[a-z][a-z0-9]*)*-[0-9]{3}-[a-z][a-z0-9-]*$'; then
+  fail "branch '$BRANCH' does not match <type>/<feature-id>-<slug> (see docs/HARNESS.md → Naming standards). type ∈ {feat,fix,chore,docs}; feature-id e.g. 'ui-001'; slug 1-3 kebab words."
+else
+  # Verify the embedded feature id exists in feature_list.json.
+  FID=$(echo "$BRANCH" | sed -E 's|^[a-z]+/([a-z][a-z0-9]*(-[a-z][a-z0-9]*)*-[0-9]{3})-.*$|\1|')
+  if ! node -e '
+    const f = JSON.parse(require("fs").readFileSync("feature_list.json","utf8"));
+    if (!f.features.some(x => x.id === process.argv[1])) process.exit(1);
+  ' "$FID"; then
+    fail "branch '$BRANCH' references feature id '$FID' which is not in feature_list.json"
+  fi
+  ok "branch '$BRANCH' follows naming standard; feature '$FID' exists"
+fi
 
 echo
 bold "harness CI invariants ok"
