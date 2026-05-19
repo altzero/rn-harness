@@ -16,11 +16,11 @@
         "AGENTS.md, CLAUDE.md, docs/HARNESS.md, docs/ARCHITECTURE.md are all present",
         "feature_list.json validates against scripts/feature-list-check.js"
       ],
-      "status": "in_progress",
-      "passes": false,
+      "status": "done",
+      "passes": true,
       "owner": "claude",
-      "commitSha": null,
-      "notes": "Initial bring-up. Mark done once npm install completes locally and verify passes once."
+      "commitSha": "d04fc81",
+      "notes": "Closed 2026-05-19. ./init.sh ran end-to-end on a fresh checkout (1052 packages installed, ~1m). npm run verify all four steps green at SHA d04fc81: tsc clean, expo lint clean, 6/6 jest tests pass, feature_list.json schema valid."
     },
     {
       "id": "ui-001",
