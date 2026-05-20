@@ -6,7 +6,7 @@
 
 ## Current state
 
-- Trunk: `main` at PR #4 merge
+- Trunk: `main` at PR #3 merge (`c8bb4c9`)
 - Baseline: `npm run verify` green
 
 ## Completed
@@ -14,11 +14,11 @@
 - `harness-001` — Initial harness setup (PR #1)
 - `e2e-001` — Maestro end-to-end verification (PR #2)
 - `harness-002` — Simplify harness to doc-aligned form (PR #4)
+- `ci-001` — GitHub Actions for harness checks (PR #3)
 
 ## In progress
 
-- `docs-001` — Position repo as a starter template (this branch)
-- `ci-001` — GitHub Actions for harness checks (PR #3, open)
+- `docs-001` — Position repo as a starter template (PR #5, this branch)
 
 ## Known issues
 
@@ -26,7 +26,6 @@
 
 ## Next steps
 
-1. Land PR #3 (`feat/ci-001-actions` — CI gates) so this PR's README
-   line about `.github/workflows/harness.yml` is accurate on main.
-2. Rebase this branch onto post-#3 main if needed; land this PR.
-3. Pick up `ui-001` next.
+1. Land PR #5 (this branch). Conflicts already resolved against
+   post-PR-#3 main.
+2. Pick up `ui-001` next.
