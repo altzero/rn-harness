@@ -103,11 +103,30 @@
         "Workflow YAML parses cleanly (node -e \"require('js-yaml').load(...)\")",
         "scripts/harness-ci-checks.sh exits 0 on a clean checkout (verified locally at the commit that closes this feature)"
       ],
+      "status": "done",
+      "passes": true,
+      "owner": "claude",
+      "commitSha": "c8bb4c9",
+      "notes": "Closed via PR #3. Static + e2e-ios both green on the merge commit."
+    },
+    {
+      "id": "docs-001",
+      "title": "Position repo as a starter template",
+      "category": "docs",
+      "description": "Rewrite README to describe what's included for someone using the repo as a GitHub template. Mark the repo as a template via gh CLI so the 'Use this template' button appears on github.com.",
+      "verification": [
+        "README opens with a 'GitHub template — Use this template' callout",
+        "README has a 'What's included' section listing the harness subsystems, scaffolding, and CI",
+        "README has a 'First things to edit' section for new template users",
+        "gh repo view --json isTemplate returns isTemplate: true",
+        "npm run verify exits 0",
+        "scripts/check-clean-state.sh passes"
+      ],
       "status": "in_progress",
       "passes": false,
       "owner": "claude",
       "commitSha": null,
-      "notes": "Rebased onto post-harness-002 main; harness-ci-checks.sh updated to look at PROGRESS.md and the surviving doc set. The e2e-ios job uses expo prebuild + xcodebuild (path 1 in the workflow comments); switch to EAS local build (path 2) if prebuild becomes unreliable. The job is `continue-on-error: true` until it has been green for a stretch — promote to required by removing that line. Bundle ID is hardcoded to com.anonymous.rnharness via $APP_ID; once ios.bundleIdentifier is set in app.json (a separate feature), align the two."
+      "notes": "PR #5. GitHub template flag already set; this PR carries the README rewrite."
     }
   ]
 }

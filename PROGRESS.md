@@ -6,17 +6,18 @@
 
 ## Current state
 
-- Trunk: `main` at the latest commit
+- Trunk: `main` at PR #4 merge
 - Baseline: `npm run verify` green
 
 ## Completed
 
-- `harness-001` — Initial harness setup (PR #1, merged)
-- `e2e-001` — Maestro end-to-end verification (PR #2, merged)
+- `harness-001` — Initial harness setup (PR #1)
+- `e2e-001` — Maestro end-to-end verification (PR #2)
+- `harness-002` — Simplify harness to doc-aligned form (PR #4)
 
 ## In progress
 
-- `harness-002` — Simplify harness to doc-aligned form (this branch)
+- `docs-001` — Position repo as a starter template (this branch)
 - `ci-001` — GitHub Actions for harness checks (PR #3, open)
 
 ## Known issues
@@ -25,7 +26,7 @@
 
 ## Next steps
 
-1. Land this PR (`chore/harness-002-simplify`).
-2. Rebase PR #3 on top; update its `harness-ci-checks.sh` to point at
-   `PROGRESS.md` instead of the deleted `claude-progress.md`.
-3. Pick up `ui-001`.
+1. Land PR #3 (`feat/ci-001-actions` — CI gates) so this PR's README
+   line about `.github/workflows/harness.yml` is accurate on main.
+2. Rebase this branch onto post-#3 main if needed; land this PR.
+3. Pick up `ui-001` next.
