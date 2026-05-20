@@ -14,6 +14,11 @@
 
 set -uo pipefail
 
+# Default appId for flows that reference ${APP_ID}. Expo Go's bundle id
+# unless the caller exported a different one (CI does this from the
+# built .app's CFBundleIdentifier).
+export APP_ID="${APP_ID:-host.exp.exponent}"
+
 bold()  { printf '\033[1m%s\033[0m\n' "$*"; }
 ok()    { printf '  \033[32m[ok]\033[0m %s\n' "$*"; }
 warn()  { printf '  \033[33m[warn]\033[0m %s\n' "$*"; }
@@ -66,10 +71,14 @@ LOG_FILE="$ART_DIR/${TS}-maestro-${FLOW_BASE}.log"
 
 bold "[maestro 3/4] run flow: $FLOW"
 echo "  log: $LOG_FILE"
+echo "  APP_ID=$APP_ID"
 # Use --format junit + --output for machine-readable result alongside the log.
+# Pass APP_ID via -e so it is visible to Maestro's JS engine; exporting
+# from the shell alone does not populate the engine's globals.
 JUNIT_FILE="$ART_DIR/${TS}-maestro-${FLOW_BASE}.junit.xml"
 set +e
 maestro test "$FLOW" \
+  -e APP_ID="$APP_ID" \
   --format junit \
   --output "$JUNIT_FILE" \
   "$@" 2>&1 | tee "$LOG_FILE"

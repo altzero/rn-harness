@@ -1,0 +1,208 @@
+name: harness
+
+# Runs the harness's own gates on every push and PR.
+#
+# Two jobs:
+#   - static: typecheck + lint + jest + schema + harness invariants.
+#             Required. Fast (~1 min on ubuntu-latest).
+#   - e2e-ios: boot an iOS sim, build the app, run the Maestro smoke flow.
+#             Advisory at first (continue-on-error: true) — promote to
+#             required once it has been green for a stretch.
+
+on:
+  pull_request:
+    branches: [main]
+    # Re-run when the `e2e` label is added so the e2e-ios job's `if:` gate
+    # can flip from skipped → run without needing an empty-commit push.
+    types: [opened, synchronize, reopened, labeled]
+  push:
+    branches: [main]
+
+concurrency:
+  # Cancel superseded runs on the same ref so PRs don't queue up macOS minutes.
+  group: harness-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  static:
+    name: static (typecheck / lint / jest / harness invariants)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'   # avoids EBADENGINE for eslint-visitor-keys (wants 20/22/24)
+          cache: 'npm'
+
+      - name: install
+        run: npm ci
+
+      - name: typecheck
+        run: npm run typecheck
+
+      - name: lint
+        run: npm run lint
+
+      - name: tests
+        run: npm test -- --ci
+
+      - name: feature_list.json schema + WIP=1
+        run: node scripts/feature-list-check.js
+
+      - name: harness invariants
+        run: bash scripts/harness-ci-checks.sh
+
+  e2e-ios:
+    name: e2e-ios (Maestro on a real iOS simulator)
+    needs: static
+    # Only run e2e when label "e2e" is on the PR, or on main pushes.
+    # Edit this condition once the e2e job is reliably green to make it
+    # the default on every PR.
+    if: |
+      github.event_name == 'push' ||
+      contains(github.event.pull_request.labels.*.name, 'e2e')
+    runs-on: macos-latest
+    continue-on-error: true   # advisory while we shake it out; remove once stable
+    # 60 min: warm cache runs ~8–12 min; cold cache (no key match) can still
+    # be ~25–30 min. Keep at 60 until we have a stretch of green warm-cache
+    # runs, then drop to 30.
+    timeout-minutes: 60
+    env:
+      # Fallback only. The build step overrides this with the actual
+      # CFBundleIdentifier read from the built .app/Info.plist, so adding
+      # ios.bundleIdentifier to app.json doesn't require a workflow change.
+      APP_ID: com.anonymous.rnharness
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: install JS deps
+        run: npm ci
+
+      - name: install Maestro
+        run: |
+          curl -Ls 'https://get.maestro.mobile.dev' | bash
+          echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
+
+      - name: boot iOS simulator
+        run: bash scripts/sim-ios.sh
+
+      # Cache the slow-to-rebuild native artefacts. Keyed on the files that
+      # actually determine the build (package-lock.json + app.json). On a
+      # cache hit the next steps go from ~25–30 min → ~8–12 min:
+      #   - ios/                                    prebuild is idempotent
+      #   - .expo/                                  prebuild fingerprint
+      #   - ~/Library/Caches/CocoaPods              pod source cache
+      #   - ~/Library/Developer/Xcode/DerivedData   Xcode incremental build
+      #
+      # `hashFiles()` is avoided here because its patterns recurse from
+      # GITHUB_WORKSPACE and choke on node_modules (>120s timeout). Compute
+      # the digest explicitly over only the files we care about.
+      - name: compute ios cache key
+        id: ios-cache-key
+        run: |
+          KEY=$(shasum -a 256 package-lock.json app.json | shasum -a 256 | cut -c1-16)
+          echo "key=ios-build-${{ runner.os }}-$KEY" >> "$GITHUB_OUTPUT"
+          echo "Computed ios cache key: ios-build-${{ runner.os }}-$KEY"
+
+      # Split restore + save (vs combined actions/cache@v4) so the cache
+      # is written even when a later step fails. The combined action
+      # only saves on full-job success — meaning if Maestro fails after
+      # a successful build, the build is thrown away. Splitting lets a
+      # later `if: always()` save salvage the build for the next run.
+      #
+      # The path list MUST stay in sync between the restore step below
+      # and the save step at the end of the job.
+      - name: restore ios build cache
+        id: ios-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            ios
+            .expo
+            ~/Library/Caches/CocoaPods
+            ~/Library/Developer/Xcode/DerivedData
+          key: ${{ steps.ios-cache-key.outputs.key }}
+          restore-keys: |
+            ios-build-${{ runner.os }}-
+
+      # --- Build the app for the simulator ---
+      # Two paths exist; pick one and document the choice:
+      #
+      #   (1) expo prebuild + xcodebuild — fully local, slowest, most accurate.
+      #       Bundle ID is read from the built .app/Info.plist; no app.json
+      #       changes required.
+      #
+      #   (2) eas build --profile development --local + eas build:run --latest
+      #       — uses EAS but stays on the runner. Requires EXPO_TOKEN secret.
+      #
+      # Path (1) below. `expo prebuild` runs WITHOUT --clean so a cache-hit
+      # ios/ is reused; the Expo fingerprint in .expo/ tells prebuild whether
+      # to regenerate. If you change a config plugin and prebuild silently
+      # uses a stale ios/, the cache key (above) is the place to bust it
+      # rather than re-adding --clean here.
+      - name: build app for simulator (prebuild + xcodebuild)
+        run: |
+          npx expo prebuild --platform ios --non-interactive
+          cd ios
+          # Find the workspace produced by prebuild
+          WS=$(ls -d *.xcworkspace | head -n 1)
+          SCHEME=$(basename "$WS" .xcworkspace)
+          # Release configuration so the JS bundle is embedded in the .app.
+          # Debug builds expect Metro at runtime; there is no Metro on the CI
+          # runner, so the app would launch into a blank screen and every
+          # assertVisible would fail.
+          xcodebuild \
+            -workspace "$WS" \
+            -scheme "$SCHEME" \
+            -configuration Release \
+            -sdk iphonesimulator \
+            -derivedDataPath build \
+            -quiet
+          APP_PATH=$(find "$PWD/build/Build/Products/Release-iphonesimulator" -maxdepth 1 -name "*.app" -print -quit)
+          if [ -z "$APP_PATH" ] || [ ! -d "$APP_PATH" ]; then
+            echo "::error::no .app found under $PWD/build/Build/Products/Release-iphonesimulator"
+            exit 1
+          fi
+          BUNDLE_ID=$(/usr/libexec/PlistBuddy -c "Print :CFBundleIdentifier" "$APP_PATH/Info.plist")
+          echo "APP_PATH=$APP_PATH"   >> "$GITHUB_ENV"
+          echo "APP_ID=$BUNDLE_ID"    >> "$GITHUB_ENV"
+          echo "Resolved APP_PATH=$APP_PATH"
+          echo "Resolved APP_ID=$BUNDLE_ID (overrides job-level default)"
+
+      - name: install + launch on booted sim
+        run: |
+          xcrun simctl install booted "$APP_PATH"
+          xcrun simctl launch booted "$APP_ID"
+
+      - name: run Maestro smoke flow
+        run: bash scripts/run-maestro.sh .maestro/flows/home.yaml
+
+      - name: upload diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: maestro-ios-${{ github.run_id }}
+          path: tmp/diagnostics/
+          if-no-files-found: warn
+          retention-days: 14
+
+      # Save the cache even if Maestro failed. Paired with the restore
+      # step above (see the comment there). Only writes if we didn't
+      # already have an exact-key hit, to avoid re-uploading unchanged
+      # data. `if: always()` lets it run after a failed Maestro step.
+      - name: save ios build cache
+        if: always() && steps.ios-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            ios
+            .expo
+            ~/Library/Caches/CocoaPods
+            ~/Library/Developer/Xcode/DerivedData
+          key: ${{ steps.ios-cache-key.outputs.key }}
