@@ -1,0 +1,19 @@
+{
+  "id": "docs-template",
+  "title": "Position repo as a starter template",
+  "category": "docs",
+  "description": "Rewrite README to describe what's included for someone using the repo as a GitHub template. Mark the repo as a template via gh CLI so the 'Use this template' button appears on github.com.",
+  "verification": [
+    "README opens with a 'GitHub template — Use this template' callout",
+    "README has a 'What's included' section listing the harness subsystems, scaffolding, and CI",
+    "README has a 'First things to edit' section for new template users",
+    "gh repo view --json isTemplate returns isTemplate: true",
+    "npm run verify exits 0",
+    "scripts/check-clean-state.sh passes"
+  ],
+  "status": "in_progress",
+  "passes": false,
+  "owner": "claude",
+  "commitSha": null,
+  "notes": "Re-scoped from old id `docs-001` to `docs-template` as part of the harness-features rename (PR #6). The GitHub template flag was already set on the repo via `gh repo edit --template` during PR #5 work; this PR carries the README rewrite onto post-harness-features main."
+}

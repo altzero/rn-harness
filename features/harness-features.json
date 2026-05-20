@@ -15,9 +15,9 @@
     "npm run verify exits 0",
     "On this branch, scripts/harness-ci-checks.sh passes for branch chore/harness-features"
   ],
-  "status": "in_progress",
-  "passes": false,
+  "status": "done",
+  "passes": true,
   "owner": "claude",
-  "commitSha": null,
-  "notes": "Single PR per user's request. PR #5 (docs-template, was docs-001) is still open against the old format; after this lands, that PR needs a small rebase to (1) rename its feature id, (2) move from feature_list.json to features/docs-template.json. Mechanical."
+  "commitSha": "75ee682",
+  "notes": "Closed via PR #6 (merged into main at 75ee682). Replaced feature_list.json with features/, dropped -NNN, updated validator + CI invariants + docs."
 }
