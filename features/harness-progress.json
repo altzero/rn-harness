@@ -15,9 +15,9 @@
     "scripts/harness-ci-checks.sh exits 0 on chore/harness-progress",
     "This feature's status is flipped to done in the same PR's last commit, with commitSha set to the prior implementation commit"
   ],
-  "status": "in_progress",
-  "passes": false,
+  "status": "done",
+  "passes": true,
   "owner": "claude",
-  "commitSha": null,
-  "notes": "Iteration on the earlier 'trim PROGRESS.md' scope after user said 'just remove progress entirely.' The close-before-merge convention is the harness's answer to the recurring bookkeeping gap (ci-actions after PR #3, harness-features after PR #6, docs-template after PR #7 — same shape three times). Flipping the status in the PR's own last commit means the merge carries the closed state into main as part of its diff."
+  "commitSha": "0bb7e12",
+  "notes": "Closed in the same PR via the new close-before-merge convention. The implementation lives at 0bb7e12; this bookkeeping commit flips status so the PR's merge carries the closed feature into main as part of its own diff. No follow-up commit needed after merge."
 }
