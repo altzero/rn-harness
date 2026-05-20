@@ -64,9 +64,9 @@ jobs:
       contains(github.event.pull_request.labels.*.name, 'e2e')
     runs-on: macos-latest
     continue-on-error: true   # advisory while we shake it out; remove once stable
-    # Generous timeout while uncached: macos-latest builds of expo prebuild +
-    # xcodebuild Debug have measured 16–28 min on a cold runner. Drop back to
-    # 30 once CocoaPods + DerivedData caching is in place.
+    # 60 min: warm cache runs ~8–12 min; cold cache (no key match) can still
+    # be ~25–30 min. Keep at 60 until we have a stretch of green warm-cache
+    # runs, then drop to 30.
     timeout-minutes: 60
     env:
       # Fallback only. The build step overrides this with the actual
@@ -92,6 +92,26 @@ jobs:
       - name: boot iOS simulator
         run: bash scripts/sim-ios.sh
 
+      # Cache the slow-to-rebuild native artefacts. Keyed on the files that
+      # actually determine the build (package-lock.json + app.json). On a
+      # cache hit the next steps go from ~25–30 min → ~8–12 min:
+      #   - ios/                                    prebuild is idempotent
+      #   - .expo/                                  prebuild fingerprint
+      #   - ~/Library/Caches/CocoaPods              pod source cache
+      #   - ~/Library/Developer/Xcode/DerivedData   Xcode incremental build
+      - name: restore ios build cache
+        id: ios-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ios
+            .expo
+            ~/Library/Caches/CocoaPods
+            ~/Library/Developer/Xcode/DerivedData
+          key: ios-build-${{ runner.os }}-${{ hashFiles('package-lock.json', 'app.json') }}
+          restore-keys: |
+            ios-build-${{ runner.os }}-
+
       # --- Build the app for the simulator ---
       # Two paths exist; pick one and document the choice:
       #
@@ -102,10 +122,14 @@ jobs:
       #   (2) eas build --profile development --local + eas build:run --latest
       #       — uses EAS but stays on the runner. Requires EXPO_TOKEN secret.
       #
-      # The job below uses path (1). To switch to (2), replace this step.
+      # Path (1) below. `expo prebuild` runs WITHOUT --clean so a cache-hit
+      # ios/ is reused; the Expo fingerprint in .expo/ tells prebuild whether
+      # to regenerate. If you change a config plugin and prebuild silently
+      # uses a stale ios/, the cache key (above) is the place to bust it
+      # rather than re-adding --clean here.
       - name: build app for simulator (prebuild + xcodebuild)
         run: |
-          npx expo prebuild --platform ios --clean --non-interactive
+          npx expo prebuild --platform ios --non-interactive
           cd ios
           # Find the workspace produced by prebuild
           WS=$(ls -d *.xcworkspace | head -n 1)
