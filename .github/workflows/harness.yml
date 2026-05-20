@@ -64,7 +64,10 @@ jobs:
       contains(github.event.pull_request.labels.*.name, 'e2e')
     runs-on: macos-latest
     continue-on-error: true   # advisory while we shake it out; remove once stable
-    timeout-minutes: 30
+    # Generous timeout while uncached: macos-latest builds of expo prebuild +
+    # xcodebuild Debug have measured 16–28 min on a cold runner. Drop back to
+    # 30 once CocoaPods + DerivedData caching is in place.
+    timeout-minutes: 60
     env:
       # Fallback only. The build step overrides this with the actual
       # CFBundleIdentifier read from the built .app/Info.plist, so adding
