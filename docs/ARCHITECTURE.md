@@ -18,9 +18,8 @@ rn-harness/
 ├── AGENTS.md            # router into harness docs
 ├── CLAUDE.md            # Claude entry (imports AGENTS.md)
 ├── README.md            # human-facing overview
-├── PROGRESS.md          # next steps, known issues
 ├── DECISIONS.md         # append-only design log
-├── features/            # one JSON file per feature
+├── features/            # one JSON file per feature (status, verification)
 ├── init.sh              # initialization phase
 ├── app/                 # expo-router routes
 ├── components/          # presentational components

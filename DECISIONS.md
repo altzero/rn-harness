@@ -94,25 +94,29 @@
   (mid-branch validators that see across PRs) is too magic for the
   benefit.
 
-## 2026-05-20 — PROGRESS.md is human content only; status lives in features/
+## 2026-05-20 — Remove PROGRESS.md; status only in features/
 
-- **What:** Removed the *Completed* and *In progress* sections from
-  PROGRESS.md. PROGRESS.md now carries only: a one-line *Current
-  state*, *Known issues*, and *Next steps* — the parts that aren't
-  derivable from `features/*.json` or git history.
-- **Why:** After every PR merge, PROGRESS.md's *Completed* / *In
-  progress* sections were stale until someone (us) hand-edited them.
-  Same fact in two places → one place rots. The user pointed this out
-  directly after PR #7's docs-template ended up listed as "In progress"
-  on main even though the PR had closed.
-- **Rejected:** auto-update via GitHub Action on push-to-main (works
-  but adds a bot commit per merge + a write-token requirement +
-  another loop to debug); pre-merge gate requiring status-flip in the
-  PR (chicken-and-egg with merge commit SHA — can't know it before
-  merging).
-- **Trade-off:** anyone wanting "what's done" / "what's in progress"
-  reads `features/` directly (or runs `npm run harness:features` for
-  the one-line summary). The *Next steps* section can still be briefly
-  stale right after a merge — but it's genuinely human content, and the
-  next session refreshes it as the first thing they do. Self-healing
-  in a way *Completed* / *In progress* never were.
+- **What:** Deleted `PROGRESS.md`. Feature status lives only in
+  `features/*.json`. The "next best step" is derived (pick the
+  highest-priority `in_progress`, else first `todo`). "Known issues"
+  move to GitHub Issues or the in-flight feature's `notes` field.
+  Per-branch session context lives in PR descriptions.
+- **Why:** Three consecutive PRs (#3, #6, #7) all had the same
+  post-merge bug — the closed feature was still listed as in_progress
+  somewhere because state was duplicated between `PROGRESS.md` and
+  `features/`. First attempt (trim PROGRESS.md's Completed/In-progress
+  sections) was halfway; the user asked to remove PROGRESS.md entirely
+  and adopt a close-before-merge convention instead.
+- **Close-before-merge convention:** the in-flight feature's `status`
+  is flipped to `done` in the **last commit of the feature branch
+  before merging**, with `commitSha` set to that commit's SHA (the
+  latest implementation commit on the branch). The PR's merge then
+  carries the closed feature into main as part of its own diff. No
+  separate bookkeeping commit. Documented in `docs/SESSION.md`.
+- **Rejected:** auto-update via GitHub Action (adds a bot commit per
+  merge + write token + another loop to debug); pre-merge gate
+  blocking merges when in_progress (annoying when the PR is genuinely
+  WIP).
+- **Trade-off:** if a follow-up issue is found after merge, that's a
+  new feature/`fix`, not "go back and revise the original." The
+  original feature genuinely was complete at the flip point.

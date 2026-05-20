@@ -11,13 +11,14 @@ not an instruction dump.
 ## Startup workflow
 
 1. `pwd` — confirm repo root ends in `/rn-harness`.
-2. Read `PROGRESS.md` (small) — recover state, see the next best step.
-3. List `features/` — see which features are `done`, `in_progress`,
-   or `blocked`.
+2. `npm run harness:features` — one-line summary of `features/`.
+3. List `features/` — pick the highest-priority `in_progress`
+   feature, else the next `todo`. Work only on that until verified
+   or blocked. **WIP = 1.**
 4. `./init.sh` — fail loudly if the foundation is broken.
 5. `npm run verify` — baseline must be green before new work.
-6. Pick the highest-priority `in_progress` feature, else the next
-   `todo`. Work only on that until verified or blocked. **WIP = 1.**
+6. Skim recent commits / open PRs for the per-branch session context
+   (PR descriptions carry it; `gh pr list` and `gh pr view <n>`).
 
 ## Routing
 
@@ -27,9 +28,8 @@ not an instruction dump.
 | `docs/SESSION.md` | end-of-session checklist, PR template |
 | `docs/ARCHITECTURE.md` | layer model, folder map |
 | `docs/RN_PLATFORM.md` | Expo / Metro / Hermes / EAS rules |
-| `PROGRESS.md` | current state, next steps |
 | `DECISIONS.md` | append-only design decisions |
-| `features/*.json` | machine-readable scope, one feature per file |
+| `features/*.json` | machine-readable scope; status, verification list, notes per feature |
 | `.maestro/README.md` | E2E flow authoring |
 
 ## Hard rules
@@ -46,6 +46,13 @@ not an instruction dump.
 
 ## End of session
 
-Run `docs/SESSION.md`. In one sentence: verify green, update
-`PROGRESS.md` + the relevant `features/<id>.json`, commit, open a PR if the branch
-is reviewable, run `npm run harness:clean-state`.
+Run `docs/SESSION.md`. The shortest version:
+
+1. `npm run verify` — must be green.
+2. Update the in-flight `features/<id>.json` (status, notes).
+3. **Before merging**, flip status to `done` with `commitSha` set
+   to the latest branch tip. The merge then carries the closed
+   feature into main as part of its own diff. **No follow-up
+   bookkeeping commit needed.**
+4. Commit, push, open a PR if the branch is reviewable.
+5. `npm run harness:clean-state`.

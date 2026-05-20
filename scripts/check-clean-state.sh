@@ -11,7 +11,7 @@ problems=0
 
 bold "[clean 1/4] working tree status"
 if [ -d .git ] && ! git diff --quiet HEAD 2>/dev/null; then
-  warn "uncommitted changes — commit or explain each in PROGRESS.md:"
+  warn "uncommitted changes — commit or document each:"
   git status --short | sed 's/^/    /'
   problems=$((problems+1))
 else
@@ -44,15 +44,35 @@ else
   ok "no source dirs to scan"
 fi
 
-bold "[clean 4/4] PROGRESS.md has Next steps"
-if [ ! -f PROGRESS.md ]; then
-  warn "PROGRESS.md missing"
-  problems=$((problems+1))
-elif ! grep -q "Next steps" PROGRESS.md; then
-  warn "PROGRESS.md missing a 'Next steps' section"
-  problems=$((problems+1))
+bold "[clean 4/4] in-flight feature is flipped to done if branch is ready"
+# Only enforce on feature branches (matches the naming standard).
+BRANCH=$(git branch --show-current 2>/dev/null || echo '')
+if echo "$BRANCH" | grep -qE '^(feat|fix|chore|docs)/'; then
+  # Walk the branch slug back through segments to find the feature id.
+  REST=$(echo "$BRANCH" | sed -E 's|^[a-z]+/||')
+  FID=""
+  while [ -n "$REST" ]; do
+    if [ -f "features/${REST}.json" ]; then FID="$REST"; break; fi
+    NEXT=$(echo "$REST" | sed -E 's|-[^-]+$||')
+    [ "$NEXT" = "$REST" ] && break
+    REST="$NEXT"
+  done
+  if [ -z "$FID" ]; then
+    ok "branch '$BRANCH' has no feature id — skipped"
+  else
+    STATUS=$(node -e "console.log(require('./features/${FID}.json').status)" 2>/dev/null || echo "")
+    if [ "$STATUS" = "in_progress" ]; then
+      warn "feature '$FID' is still in_progress — flip to done before merging (see docs/SESSION.md)"
+      # Soft warning, not a hard failure: the work may legitimately not be
+      # ready to merge yet.
+    elif [ "$STATUS" = "done" ]; then
+      ok "feature '$FID' is done — ready to merge"
+    else
+      ok "feature '$FID' is $STATUS"
+    fi
+  fi
 else
-  ok "PROGRESS.md has Next steps"
+  ok "not on a feature branch — skipped"
 fi
 
 echo

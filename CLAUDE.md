@@ -7,11 +7,10 @@ applies. The notes below are Claude-Code-specific.
 
 ## Before your first tool call
 
-1. Read `PROGRESS.md` for *Next steps*.
-2. List `features/`. Pick exactly one `in_progress` or `todo`
+1. List `features/`. Pick exactly one `in_progress` or `todo`
    feature. Multiple `in_progress` is a harness violation — fix it
    before doing anything else.
-3. `./init.sh`. If it exits non-zero, fix the foundation first.
+2. `./init.sh`. If it exits non-zero, fix the foundation first.
 
 ## When to ask vs. act
 

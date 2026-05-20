@@ -16,16 +16,7 @@ fail()  { printf '  \033[31m[fail]\033[0m %s\n' "$*" >&2; exit 1; }
 
 problems=0
 
-bold "[harness-ci 1/6] PROGRESS.md has a Next steps block"
-if [ ! -f PROGRESS.md ]; then
-  fail "PROGRESS.md is missing"
-fi
-if ! grep -q "^## Next steps" PROGRESS.md; then
-  fail "PROGRESS.md is missing a '## Next steps' section — see docs/SESSION.md"
-fi
-ok "Next steps block present"
-
-bold "[harness-ci 2/6] no stray .only / .skip / xit / debugger in committed code"
+bold "[harness-ci 1/5] no stray .only / .skip / xit / debugger in committed code"
 PATTERNS='(\.only\(|\.skip\(|xit\(|fdescribe\(|fit\(|^[[:space:]]*debugger;)'
 DIRS=()
 for d in app components hooks; do
@@ -41,7 +32,7 @@ if [ "${#DIRS[@]}" -gt 0 ]; then
 fi
 ok "no stray debug markers"
 
-bold "[harness-ci 3/6] every 'done' feature has a non-empty commitSha"
+bold "[harness-ci 2/5] every 'done' feature has a non-empty commitSha"
 MISSING=$(node -e '
   const fs = require("fs"); const path = require("path");
   const dir = path.resolve("features");
@@ -56,8 +47,8 @@ if [ -n "$MISSING" ]; then
 fi
 ok "every done feature has commitSha"
 
-bold "[harness-ci 4/6] required harness files present"
-REQUIRED=(AGENTS.md CLAUDE.md init.sh PROGRESS.md DECISIONS.md docs/HARNESS.md docs/SESSION.md docs/ARCHITECTURE.md docs/RN_PLATFORM.md features)
+bold "[harness-ci 3/5] required harness files present"
+REQUIRED=(AGENTS.md CLAUDE.md init.sh DECISIONS.md docs/HARNESS.md docs/SESSION.md docs/ARCHITECTURE.md docs/RN_PLATFORM.md features)
 for f in "${REQUIRED[@]}"; do
   if [ ! -e "$f" ]; then
     fail "required harness path missing: $f"
@@ -65,7 +56,7 @@ for f in "${REQUIRED[@]}"; do
 done
 ok "all required harness paths present"
 
-bold "[harness-ci 5/6] no committed .env or signing material"
+bold "[harness-ci 4/5] no committed .env or signing material"
 LEAKS=$(git ls-files | grep -E '(\.env$|\.env\.|\.p12$|\.jks$|\.mobileprovision$|\.key$)' || true)
 if [ -n "$LEAKS" ]; then
   echo "$LEAKS" | sed 's/^/    /'
@@ -73,7 +64,7 @@ if [ -n "$LEAKS" ]; then
 fi
 ok "no secret-shaped files committed"
 
-bold "[harness-ci 6/6] branch name follows naming standard"
+bold "[harness-ci 5/5] branch name follows naming standard"
 # In CI prefer GITHUB_HEAD_REF (PR source branch) or GITHUB_REF_NAME.
 # Locally, fall back to `git branch --show-current`.
 BRANCH="${GITHUB_HEAD_REF:-${GITHUB_REF_NAME:-$(git branch --show-current 2>/dev/null || echo '')}}"

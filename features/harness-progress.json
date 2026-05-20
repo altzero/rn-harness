@@ -1,19 +1,23 @@
 {
   "id": "harness-progress",
-  "title": "PROGRESS.md becomes the minimal human overlay",
+  "title": "Remove PROGRESS.md; track state only in features/",
   "category": "harness",
-  "description": "Remove the 'Completed' and 'In progress' sections from PROGRESS.md. Both duplicate state already in features/*.json, which is why PROGRESS.md kept going stale after every PR merge. Keep only the human-content parts: 'Current state' (one line), 'Known issues', 'Next steps'. Reader looking for status runs `npm run harness:features` or reads features/ directly.",
+  "description": "Delete PROGRESS.md entirely. Feature status was the only thing keeping it useful, and that status already lives in features/*.json. Establish a 'flip to done before merging' convention so the closed status rides into main as part of the PR's own diff — no follow-up bookkeeping commit. Update AGENTS.md, CLAUDE.md, docs/HARNESS.md, docs/SESSION.md, docs/ARCHITECTURE.md, README, init.sh, scripts/check-clean-state.sh, scripts/harness-ci-checks.sh accordingly.",
   "verification": [
-    "PROGRESS.md no longer has '## Completed' or '## In progress' sections",
-    "PROGRESS.md retains '## Current state', '## Known issues', '## Next steps'",
-    "docs/SESSION.md and AGENTS.md updated to point at features/ for status (not PROGRESS.md)",
-    "DECISIONS.md has an entry explaining the trade-off",
+    "PROGRESS.md is gone from the repo root",
+    "AGENTS.md startup workflow points at `features/` + `gh pr list` instead of PROGRESS.md",
+    "docs/SESSION.md has a 'close-before-merge convention' section",
+    "scripts/harness-ci-checks.sh dropped step 1 (PROGRESS check), now 5 checks; step 5 (branch name) renumbered correspondingly",
+    "scripts/check-clean-state.sh check 4 now validates that the in-flight feature is flipped to done before merge",
+    "init.sh has 6 steps (was 7); no longer tails PROGRESS.md",
+    "DECISIONS.md has a 2026-05-20 entry explaining the removal",
     "npm run verify exits 0",
-    "scripts/harness-ci-checks.sh exits 0 (step 1 still looks for 'Next steps' which we keep)"
+    "scripts/harness-ci-checks.sh exits 0 on chore/harness-progress",
+    "This feature's status is flipped to done in the same PR's last commit, with commitSha set to the prior implementation commit"
   ],
   "status": "in_progress",
   "passes": false,
   "owner": "claude",
   "commitSha": null,
-  "notes": "Direct response to: 'when PRs close, the progress should update.' The cleanest way to stop staleness is to stop duplicating the state in the first place. features/*.json is the single source of truth for feature status. PROGRESS.md becomes ~15 lines of genuinely human content."
+  "notes": "Iteration on the earlier 'trim PROGRESS.md' scope after user said 'just remove progress entirely.' The close-before-merge convention is the harness's answer to the recurring bookkeeping gap (ci-actions after PR #3, harness-features after PR #6, docs-template after PR #7 — same shape three times). Flipping the status in the PR's own last commit means the merge carries the closed state into main as part of its diff."
 }
