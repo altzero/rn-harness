@@ -145,16 +145,20 @@ jobs:
           # Find the workspace produced by prebuild
           WS=$(ls -d *.xcworkspace | head -n 1)
           SCHEME=$(basename "$WS" .xcworkspace)
+          # Release configuration so the JS bundle is embedded in the .app.
+          # Debug builds expect Metro at runtime; there is no Metro on the CI
+          # runner, so the app would launch into a blank screen and every
+          # assertVisible would fail.
           xcodebuild \
             -workspace "$WS" \
             -scheme "$SCHEME" \
-            -configuration Debug \
+            -configuration Release \
             -sdk iphonesimulator \
             -derivedDataPath build \
             -quiet
-          APP_PATH=$(find "$PWD/build/Build/Products/Debug-iphonesimulator" -maxdepth 1 -name "*.app" -print -quit)
+          APP_PATH=$(find "$PWD/build/Build/Products/Release-iphonesimulator" -maxdepth 1 -name "*.app" -print -quit)
           if [ -z "$APP_PATH" ] || [ ! -d "$APP_PATH" ]; then
-            echo "::error::no .app found under $PWD/build/Build/Products/Debug-iphonesimulator"
+            echo "::error::no .app found under $PWD/build/Build/Products/Release-iphonesimulator"
             exit 1
           fi
           BUNDLE_ID=$(/usr/libexec/PlistBuddy -c "Print :CFBundleIdentifier" "$APP_PATH/Info.plist")
