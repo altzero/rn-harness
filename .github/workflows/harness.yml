@@ -99,6 +99,17 @@ jobs:
       #   - .expo/                                  prebuild fingerprint
       #   - ~/Library/Caches/CocoaPods              pod source cache
       #   - ~/Library/Developer/Xcode/DerivedData   Xcode incremental build
+      #
+      # `hashFiles()` is avoided here because its patterns recurse from
+      # GITHUB_WORKSPACE and choke on node_modules (>120s timeout). Compute
+      # the digest explicitly over only the files we care about.
+      - name: compute ios cache key
+        id: ios-cache-key
+        run: |
+          KEY=$(shasum -a 256 package-lock.json app.json | shasum -a 256 | cut -c1-16)
+          echo "key=ios-build-${{ runner.os }}-$KEY" >> "$GITHUB_OUTPUT"
+          echo "Computed ios cache key: ios-build-${{ runner.os }}-$KEY"
+
       - name: restore ios build cache
         id: ios-cache
         uses: actions/cache@v4
@@ -108,7 +119,7 @@ jobs:
             .expo
             ~/Library/Caches/CocoaPods
             ~/Library/Developer/Xcode/DerivedData
-          key: ios-build-${{ runner.os }}-${{ hashFiles('package-lock.json', 'app.json') }}
+          key: ${{ steps.ios-cache-key.outputs.key }}
           restore-keys: |
             ios-build-${{ runner.os }}-
 
