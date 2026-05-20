@@ -8,9 +8,13 @@
 # harness status), this flow should be extended — or replaced with
 # ui-001.yaml — to assert on the harness-specific UI.
 #
-# Override the appId with: APP_ID=com.example.rnharness maestro test …
+# Override the appId by exporting APP_ID before invoking
+# scripts/run-maestro.sh; the wrapper defaults it to host.exp.exponent
+# (Expo Go) when unset. Maestro's substitution uses a JS engine and does
+# not understand bash-style ${VAR:-default} fallbacks, so the default
+# lives in the wrapper, not here.
 
-appId: ${APP_ID:-host.exp.exponent}
+appId: ${APP_ID}
 ---
 - launchApp:
     clearState: false

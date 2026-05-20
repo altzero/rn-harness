@@ -14,6 +14,11 @@
 
 set -uo pipefail
 
+# Default appId for flows that reference ${APP_ID}. Expo Go's bundle id
+# unless the caller exported a different one (CI does this from the
+# built .app's CFBundleIdentifier).
+export APP_ID="${APP_ID:-host.exp.exponent}"
+
 bold()  { printf '\033[1m%s\033[0m\n' "$*"; }
 ok()    { printf '  \033[32m[ok]\033[0m %s\n' "$*"; }
 warn()  { printf '  \033[33m[warn]\033[0m %s\n' "$*"; }
