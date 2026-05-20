@@ -1,0 +1,19 @@
+{
+  "id": "harness-progress",
+  "title": "PROGRESS.md becomes the minimal human overlay",
+  "category": "harness",
+  "description": "Remove the 'Completed' and 'In progress' sections from PROGRESS.md. Both duplicate state already in features/*.json, which is why PROGRESS.md kept going stale after every PR merge. Keep only the human-content parts: 'Current state' (one line), 'Known issues', 'Next steps'. Reader looking for status runs `npm run harness:features` or reads features/ directly.",
+  "verification": [
+    "PROGRESS.md no longer has '## Completed' or '## In progress' sections",
+    "PROGRESS.md retains '## Current state', '## Known issues', '## Next steps'",
+    "docs/SESSION.md and AGENTS.md updated to point at features/ for status (not PROGRESS.md)",
+    "DECISIONS.md has an entry explaining the trade-off",
+    "npm run verify exits 0",
+    "scripts/harness-ci-checks.sh exits 0 (step 1 still looks for 'Next steps' which we keep)"
+  ],
+  "status": "in_progress",
+  "passes": false,
+  "owner": "claude",
+  "commitSha": null,
+  "notes": "Direct response to: 'when PRs close, the progress should update.' The cleanest way to stop staleness is to stop duplicating the state in the first place. features/*.json is the single source of truth for feature status. PROGRESS.md becomes ~15 lines of genuinely human content."
+}

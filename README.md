@@ -96,8 +96,8 @@ When you spin up a new repo from this template:
    features). Add your own feature files; the filename must equal the
    `id` field.
 4. **`PROGRESS.md`** — rewrite the *Next steps* section for your
-   project. Clear Completed / In progress / Known issues to empty
-   states.
+   project. Clear *Known issues* to an empty state. Feature status
+   itself lives in `features/*.json`, not here.
 5. **`DECISIONS.md`** — keep the format, clear the entries. Log your
    own decisions as they come up.
 6. **`package.json`** — change `name` from `rn-harness`.

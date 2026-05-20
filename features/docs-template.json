@@ -11,9 +11,9 @@
     "npm run verify exits 0",
     "scripts/check-clean-state.sh passes"
   ],
-  "status": "in_progress",
-  "passes": false,
+  "status": "done",
+  "passes": true,
   "owner": "claude",
-  "commitSha": null,
-  "notes": "Re-scoped from old id `docs-001` to `docs-template` as part of the harness-features rename (PR #6). The GitHub template flag was already set on the repo via `gh repo edit --template` during PR #5 work; this PR carries the README rewrite onto post-harness-features main."
+  "commitSha": "2f58414",
+  "notes": "Closed via PR #7 (merged at 2f58414). Re-scoped from old id `docs-001` (PR #5) onto post-harness-features main. GitHub template flag set during the earlier PR #5 work via `gh repo edit --template`."
 }

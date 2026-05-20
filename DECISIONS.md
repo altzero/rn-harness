@@ -93,3 +93,26 @@
   by demoting one to `todo` or `done`. Accept this; the alternative
   (mid-branch validators that see across PRs) is too magic for the
   benefit.
+
+## 2026-05-20 — PROGRESS.md is human content only; status lives in features/
+
+- **What:** Removed the *Completed* and *In progress* sections from
+  PROGRESS.md. PROGRESS.md now carries only: a one-line *Current
+  state*, *Known issues*, and *Next steps* — the parts that aren't
+  derivable from `features/*.json` or git history.
+- **Why:** After every PR merge, PROGRESS.md's *Completed* / *In
+  progress* sections were stale until someone (us) hand-edited them.
+  Same fact in two places → one place rots. The user pointed this out
+  directly after PR #7's docs-template ended up listed as "In progress"
+  on main even though the PR had closed.
+- **Rejected:** auto-update via GitHub Action on push-to-main (works
+  but adds a bot commit per merge + a write-token requirement +
+  another loop to debug); pre-merge gate requiring status-flip in the
+  PR (chicken-and-egg with merge commit SHA — can't know it before
+  merging).
+- **Trade-off:** anyone wanting "what's done" / "what's in progress"
+  reads `features/` directly (or runs `npm run harness:features` for
+  the one-line summary). The *Next steps* section can still be briefly
+  stale right after a merge — but it's genuinely human content, and the
+  next session refreshes it as the first thing they do. Self-healing
+  in a way *Completed* / *In progress* never were.
