@@ -110,9 +110,17 @@ jobs:
           echo "key=ios-build-${{ runner.os }}-$KEY" >> "$GITHUB_OUTPUT"
           echo "Computed ios cache key: ios-build-${{ runner.os }}-$KEY"
 
+      # Split restore + save (vs combined actions/cache@v4) so the cache
+      # is written even when a later step fails. The combined action
+      # only saves on full-job success — meaning if Maestro fails after
+      # a successful build, the build is thrown away. Splitting lets a
+      # later `if: always()` save salvage the build for the next run.
+      #
+      # The path list MUST stay in sync between the restore step below
+      # and the save step at the end of the job.
       - name: restore ios build cache
         id: ios-cache
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v4
         with:
           path: |
             ios
@@ -183,3 +191,18 @@ jobs:
           path: tmp/diagnostics/
           if-no-files-found: warn
           retention-days: 14
+
+      # Save the cache even if Maestro failed. Paired with the restore
+      # step above (see the comment there). Only writes if we didn't
+      # already have an exact-key hit, to avoid re-uploading unchanged
+      # data. `if: always()` lets it run after a failed Maestro step.
+      - name: save ios build cache
+        if: always() && steps.ios-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            ios
+            .expo
+            ~/Library/Caches/CocoaPods
+            ~/Library/Developer/Xcode/DerivedData
+          key: ${{ steps.ios-cache-key.outputs.key }}
