@@ -1,0 +1,16 @@
+{
+  "id": "ui-home",
+  "title": "Home screen shows project name and harness status",
+  "category": "ui",
+  "description": "Default tab renders the project name and feature counts read from the features/ directory at bundle time.",
+  "verification": [
+    "npm run start; open on iOS sim, Android emulator, or web",
+    "Home tab shows 'rn-harness' and the done/total feature counts",
+    "Render test covers the counts"
+  ],
+  "status": "todo",
+  "passes": false,
+  "owner": null,
+  "commitSha": null,
+  "notes": "Originally id `ui-001`."
+}

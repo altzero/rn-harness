@@ -1,0 +1,23 @@
+{
+  "id": "harness-features",
+  "title": "Restructure features to per-file form, drop -NNN suffix",
+  "category": "harness",
+  "description": "Replace feature_list.json (single shared array, source of every parallel-branch merge conflict) with a features/ directory of one JSON file per feature. Drop the -NNN suffix from feature IDs in favour of <category>-<slug> (e.g. `harness-init`, `ci-actions`). Update the validator, the CI invariants check, docs, and PROGRESS.md.",
+  "verification": [
+    "features/ directory exists with one .json file per feature",
+    "feature_list.json is removed",
+    "scripts/feature-list-check.js reads from features/ and enforces filename==id",
+    "Feature id regex matches <category>-<slug>, rejects the old -NNN form",
+    "scripts/harness-ci-checks.sh branch-name regex matches new <type>/<feature-id> shape",
+    "scripts/harness-ci-checks.sh feature-id existence check looks at features/",
+    "docs/HARNESS.md Naming standard section is updated",
+    "PROGRESS.md uses new IDs",
+    "npm run verify exits 0",
+    "On this branch, scripts/harness-ci-checks.sh passes for branch chore/harness-features"
+  ],
+  "status": "in_progress",
+  "passes": false,
+  "owner": "claude",
+  "commitSha": null,
+  "notes": "Single PR per user's request. PR #5 (docs-template, was docs-001) is still open against the old format; after this lands, that PR needs a small rebase to (1) rename its feature id, (2) move from feature_list.json to features/docs-template.json. Mechanical."
+}

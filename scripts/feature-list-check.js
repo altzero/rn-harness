@@ -1,80 +1,108 @@
 #!/usr/bin/env node
-// feature-list-check.js — schema validator for feature_list.json.
-// Run by init.sh, verify.sh, and check-clean-state.sh. Exits non-zero on
-// any violation with a single-line reason.
+// feature-list-check.js — validates the features/ directory.
+//
+// Replaces the old single-file feature_list.json. Now each feature is
+// its own file at features/<feature-id>.json. Two branches that add
+// different features no longer collide on a shared array. Same
+// validation rules as before, applied per-file plus across the set:
+//
+//   - id format             <category>-<slug>, lowercase, no -NNN suffix
+//   - filename matches id   features/foo.json must have id "foo"
+//   - required fields       id, title, description, verification[],
+//                           status, passes
+//   - status                in {todo, in_progress, blocked, done}
+//   - done                  must have passes: true and commitSha
+//   - WIP                   ≤ WIP_LIMIT (= 1) in_progress features
+//
+// Run by init.sh, npm run verify, and the CI static job.
 
 const fs = require('fs');
 const path = require('path');
 
-const FILE = path.resolve(__dirname, '..', 'feature_list.json');
+const FEATURES_DIR = path.resolve(__dirname, '..', 'features');
+const WIP_LIMIT = 1;
 const VALID_STATUSES = new Set(['todo', 'in_progress', 'blocked', 'done']);
 const REQUIRED_FIELDS = ['id', 'title', 'description', 'verification', 'status', 'passes'];
+// Canonical id: <category>-<slug>, where each segment starts with a
+// letter and may contain digits. At least one dash is required so a
+// bare category like "ui" is not a valid feature id.
+const ID_PATTERN = /^[a-z][a-z0-9]*(-[a-z][a-z0-9]*)+$/;
 
 function die(msg) {
-  console.error(`feature_list.json: ${msg}`);
+  console.error(`features: ${msg}`);
   process.exit(1);
 }
 
-let raw;
-try {
-  raw = fs.readFileSync(FILE, 'utf8');
-} catch (e) {
-  die(`cannot read ${FILE}: ${e.message}`);
+if (!fs.existsSync(FEATURES_DIR)) {
+  die(`features/ directory missing at ${FEATURES_DIR}`);
 }
 
-let data;
-try {
-  data = JSON.parse(raw);
-} catch (e) {
-  die(`invalid JSON: ${e.message}`);
-}
+const files = fs
+  .readdirSync(FEATURES_DIR)
+  .filter(f => f.endsWith('.json'))
+  .sort();
 
-if (!Array.isArray(data.features)) {
-  die('top-level `features` must be an array');
+if (files.length === 0) {
+  die(`features/ directory is empty`);
 }
 
 const seenIds = new Set();
 let inProgressCount = 0;
+const counts = { todo: 0, in_progress: 0, blocked: 0, done: 0 };
 
-for (const [i, f] of data.features.entries()) {
-  const where = `features[${i}]${f.id ? ` (id=${f.id})` : ''}`;
+for (const file of files) {
+  const fullPath = path.join(FEATURES_DIR, file);
+  const where = `features/${file}`;
+
+  let f;
+  try {
+    f = JSON.parse(fs.readFileSync(fullPath, 'utf8'));
+  } catch (e) {
+    die(`${where}: invalid JSON — ${e.message}`);
+  }
+
   for (const k of REQUIRED_FIELDS) {
-    if (!(k in f)) die(`${where} missing required field "${k}"`);
+    if (!(k in f)) die(`${where}: missing required field "${k}"`);
   }
-  // Canonical id: <category>-<NNN>; see docs/HARNESS.md → Naming standard.
-  if (!/^[a-z][a-z0-9]*(-[a-z][a-z0-9]*)*-\d{3}$/.test(f.id)) {
-    die(`${where} id "${f.id}" doesn't match <category>-<NNN> (3-digit zero-padded)`);
+
+  if (!ID_PATTERN.test(f.id)) {
+    die(`${where}: id "${f.id}" doesn't match <category>-<slug> (see docs/HARNESS.md → Naming standard)`);
   }
-  if (seenIds.has(f.id)) die(`${where} duplicate id "${f.id}"`);
+
+  const expectedId = file.replace(/\.json$/, '');
+  if (f.id !== expectedId) {
+    die(`${where}: filename id "${expectedId}" does not match field id "${f.id}"`);
+  }
+
+  if (seenIds.has(f.id)) die(`${where}: duplicate id "${f.id}"`);
   seenIds.add(f.id);
 
   if (!VALID_STATUSES.has(f.status)) {
-    die(`${where} status "${f.status}" not in ${[...VALID_STATUSES].join(', ')}`);
+    die(`${where}: status "${f.status}" not in ${[...VALID_STATUSES].join(', ')}`);
   }
   if (!Array.isArray(f.verification) || f.verification.length === 0) {
-    die(`${where} verification must be a non-empty array of strings`);
+    die(`${where}: verification must be a non-empty array of strings`);
   }
   if (typeof f.passes !== 'boolean') {
-    die(`${where} passes must be boolean`);
+    die(`${where}: passes must be boolean`);
   }
   if (f.status === 'done' && f.passes !== true) {
-    die(`${where} status=done but passes=false — set passes:true and fill commitSha`);
+    die(`${where}: status=done requires passes:true`);
   }
   if (f.status === 'done' && !f.commitSha) {
-    die(`${where} status=done but commitSha is empty`);
+    die(`${where}: status=done requires a non-empty commitSha`);
   }
+
   if (f.status === 'in_progress') inProgressCount++;
+  counts[f.status]++;
 }
 
-const wipLimit = data.wipLimit ?? 1;
-if (inProgressCount > wipLimit) {
-  die(`${inProgressCount} features are in_progress; wipLimit is ${wipLimit}. WIP=1 (see docs/HARNESS.md).`);
+if (inProgressCount > WIP_LIMIT) {
+  die(`${inProgressCount} features are in_progress; WIP_LIMIT is ${WIP_LIMIT}. See docs/HARNESS.md.`);
 }
 
-const counts = { todo: 0, in_progress: 0, blocked: 0, done: 0 };
-for (const f of data.features) counts[f.status]++;
 console.log(
-  `feature_list.json: ok (${data.features.length} features — ` +
+  `features: ok (${files.length} features — ` +
     Object.entries(counts).map(([k, v]) => `${k}:${v}`).join(' ') +
     `)`
 );

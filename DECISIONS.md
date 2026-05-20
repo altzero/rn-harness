@@ -69,3 +69,27 @@
   almost never conflict when separated. Per-branch session notes belong
   in the PR description, not in a shared file.
 - **Rejected:** keeping one file; one file per branch (fragments state).
+
+## 2026-05-20 — Features as a directory; drop the `-NNN` suffix
+
+- **What:** Replaced `feature_list.json` (single shared array) with a
+  `features/` directory of one JSON file per feature. Feature IDs are
+  now `<category>-<slug>` (e.g. `ui-home`, `ci-actions`) — no
+  zero-padded number.
+- **Why:** Every parallel-branch PR was conflicting on the shared
+  `features` array. Per-file means two branches that add different
+  features touch different files (no collision). The `-NNN` suffix
+  carried no semantic value and actively created contention (two
+  branches both wanting `ui-003`); a meaningful slug is unique by
+  intent.
+- **Rejected:** keeping JSON-in-one-file (conflict source unchanged);
+  YAML files (adds js-yaml runtime dep for no win); status in PR
+  labels (couples to GitHub-as-tool). JSON-in-a-directory keeps
+  primitives in the repo (Lecture 03) and uses tooling already in
+  the project.
+- **Trade-off:** WIP=1 is checked per branch view. Two branches each
+  marking a different feature `in_progress` and both merging to main
+  creates a transient WIP=2 — resolved manually at the second merge
+  by demoting one to `todo` or `done`. Accept this; the alternative
+  (mid-branch validators that see across PRs) is too magic for the
+  benefit.

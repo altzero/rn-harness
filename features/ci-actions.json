@@ -1,0 +1,19 @@
+{
+  "id": "ci-actions",
+  "title": "GitHub Actions runs static + e2e harness gates on every PR",
+  "category": "ci",
+  "description": "Two-job workflow at .github/workflows/harness.yml: 'static' (ubuntu, ~1 min — typecheck/lint/jest/schema + harness invariants) runs on every push and PR; 'e2e-ios' (macos, ~10–20 min — boot sim, prebuild + xcodebuild Release, run Maestro smoke flow, upload artifacts) runs on main pushes or PRs labelled 'e2e'. Invariants live in scripts/harness-ci-checks.sh.",
+  "verification": [
+    "Push a branch to GitHub; the 'static' job runs and exits 0",
+    "Open a PR against main; both 'static' (required) and (with 'e2e' label) 'e2e-ios' jobs trigger",
+    "Stray `.only` in a test fails the 'harness invariants' step",
+    "A `done` feature with empty commitSha fails the 'static' job",
+    "When 'e2e-ios' runs, it uploads a `maestro-ios-<run-id>` artifact",
+    "Workflow YAML parses cleanly"
+  ],
+  "status": "done",
+  "passes": true,
+  "owner": "claude",
+  "commitSha": "c8bb4c9",
+  "notes": "Closed via PR #3. Static + e2e-ios both green on the merge commit. Originally id `ci-001`."
+}

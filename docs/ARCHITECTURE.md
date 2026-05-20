@@ -20,7 +20,7 @@ rn-harness/
 ├── README.md            # human-facing overview
 ├── PROGRESS.md          # next steps, known issues
 ├── DECISIONS.md         # append-only design log
-├── feature_list.json    # scope primitive
+├── features/            # one JSON file per feature
 ├── init.sh              # initialization phase
 ├── app/                 # expo-router routes
 ├── components/          # presentational components
@@ -40,7 +40,7 @@ until a feature needs it):
 2. **app/** — routes. Depends on components/hooks. Only layer that
    imports `expo-router`.
 
-When a feature needs non-UI logic (e.g. parsing `feature_list.json` at
+When a feature needs non-UI logic (e.g. reading `features/*.json` at
 build time for `ui-001`), reintroduce `lib/` as a pure-TS module — but
 not before. Speculative scaffolding violates the "no hypothetical
 future requirements" rule.

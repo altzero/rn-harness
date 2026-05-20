@@ -47,7 +47,7 @@ jobs:
       - name: tests
         run: npm test -- --ci
 
-      - name: feature_list.json schema + WIP=1
+      - name: features/ schema + WIP=1
         run: node scripts/feature-list-check.js
 
       - name: harness invariants

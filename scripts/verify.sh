@@ -24,9 +24,9 @@ bold "[verify 3/4] tests"
 npm test -- --silent || fail "tests failed"
 ok "tests pass"
 
-bold "[verify 4/4] feature_list.json"
-node scripts/feature-list-check.js || fail "feature_list.json invalid"
-ok "feature_list.json valid"
+bold "[verify 4/4] features/"
+node scripts/feature-list-check.js || fail "features/ invalid"
+ok "features/ valid"
 
 echo
 bold "verify complete — baseline is green"

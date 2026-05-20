@@ -1,0 +1,18 @@
+{
+  "id": "e2e-maestro",
+  "title": "Maestro end-to-end verification",
+  "category": "e2e",
+  "description": "Maestro toolchain wired into the harness so feature verification lists can include real-simulator runs. Smoke flow exercises the default Expo home tab.",
+  "verification": [
+    "Install maestro: curl -Ls 'https://get.maestro.mobile.dev' | bash",
+    "Boot an iOS simulator: npm run sim:ios",
+    "Start the app on the sim: npm run ios",
+    "Run the flow: npm run e2e",
+    "Confirm exit code 0 and screenshot/JUnit artifacts in tmp/diagnostics/"
+  ],
+  "status": "todo",
+  "passes": false,
+  "owner": null,
+  "commitSha": null,
+  "notes": "Scaffolding landed via PR #2. Flipping to done needs an actual local simulator run. Originally id `e2e-001`."
+}

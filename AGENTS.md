@@ -12,8 +12,8 @@ not an instruction dump.
 
 1. `pwd` — confirm repo root ends in `/rn-harness`.
 2. Read `PROGRESS.md` (small) — recover state, see the next best step.
-3. Read `feature_list.json` — see which features are `done`,
-   `in_progress`, `blocked`.
+3. List `features/` — see which features are `done`, `in_progress`,
+   or `blocked`.
 4. `./init.sh` — fail loudly if the foundation is broken.
 5. `npm run verify` — baseline must be green before new work.
 6. Pick the highest-priority `in_progress` feature, else the next
@@ -29,14 +29,14 @@ not an instruction dump.
 | `docs/RN_PLATFORM.md` | Expo / Metro / Hermes / EAS rules |
 | `PROGRESS.md` | current state, next steps |
 | `DECISIONS.md` | append-only design decisions |
-| `feature_list.json` | machine-readable scope |
+| `features/*.json` | machine-readable scope, one feature per file |
 | `.maestro/README.md` | E2E flow authoring |
 
 ## Hard rules
 
 - **WIP = 1.** One feature at a time.
-- **No declaring victory without evidence.** `feature_list.json[].verification`
-  list must have been performed before flipping to `done`.
+- **No declaring victory without evidence.** The `verification` list in
+  `features/<id>.json` must have been performed before flipping to `done`.
 - **Don't edit `ios/` / `android/`.** Native config goes through
   `app.json` + config plugins. See `docs/RN_PLATFORM.md`.
 - **Pin behavior to versions.** Expo SDK 54 — read
@@ -47,5 +47,5 @@ not an instruction dump.
 ## End of session
 
 Run `docs/SESSION.md`. In one sentence: verify green, update
-`PROGRESS.md` + `feature_list.json`, commit, open a PR if the branch
+`PROGRESS.md` + the relevant `features/<id>.json`, commit, open a PR if the branch
 is reviewable, run `npm run harness:clean-state`.
