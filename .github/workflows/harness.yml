@@ -66,8 +66,9 @@ jobs:
     continue-on-error: true   # advisory while we shake it out; remove once stable
     timeout-minutes: 30
     env:
-      # Override per-flow via the .maestro/config.yaml default if you change
-      # this. Set ios.bundleIdentifier in app.json to match.
+      # Fallback only. The build step overrides this with the actual
+      # CFBundleIdentifier read from the built .app/Info.plist, so adding
+      # ios.bundleIdentifier to app.json doesn't require a workflow change.
       APP_ID: com.anonymous.rnharness
     steps:
       - uses: actions/checkout@v4
@@ -92,7 +93,8 @@ jobs:
       # Two paths exist; pick one and document the choice:
       #
       #   (1) expo prebuild + xcodebuild — fully local, slowest, most accurate.
-      #       Requires `ios.bundleIdentifier` set in app.json.
+      #       Bundle ID is read from the built .app/Info.plist; no app.json
+      #       changes required.
       #
       #   (2) eas build --profile development --local + eas build:run --latest
       #       — uses EAS but stays on the runner. Requires EXPO_TOKEN secret.
@@ -112,8 +114,16 @@ jobs:
             -sdk iphonesimulator \
             -derivedDataPath build \
             -quiet
-          APP_PATH=$(find build/Build/Products/Debug-iphonesimulator -maxdepth 1 -name "*.app" -print -quit)
-          echo "APP_PATH=$APP_PATH" >> "$GITHUB_ENV"
+          APP_PATH=$(find "$PWD/build/Build/Products/Debug-iphonesimulator" -maxdepth 1 -name "*.app" -print -quit)
+          if [ -z "$APP_PATH" ] || [ ! -d "$APP_PATH" ]; then
+            echo "::error::no .app found under $PWD/build/Build/Products/Debug-iphonesimulator"
+            exit 1
+          fi
+          BUNDLE_ID=$(/usr/libexec/PlistBuddy -c "Print :CFBundleIdentifier" "$APP_PATH/Info.plist")
+          echo "APP_PATH=$APP_PATH"   >> "$GITHUB_ENV"
+          echo "APP_ID=$BUNDLE_ID"    >> "$GITHUB_ENV"
+          echo "Resolved APP_PATH=$APP_PATH"
+          echo "Resolved APP_ID=$BUNDLE_ID (overrides job-level default)"
 
       - name: install + launch on booted sim
         run: |
