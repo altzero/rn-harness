@@ -43,23 +43,27 @@ ok "no stray debug markers"
 
 bold "[harness-ci 3/6] every 'done' feature has a non-empty commitSha"
 MISSING=$(node -e '
-  const f = JSON.parse(require("fs").readFileSync("feature_list.json","utf8"));
-  const bad = f.features.filter(x => x.status === "done" && (!x.commitSha || x.commitSha.length < 7));
-  if (bad.length) { console.log(bad.map(x => x.id).join(",")); process.exit(1); }
+  const fs = require("fs"); const path = require("path");
+  const dir = path.resolve("features");
+  const bad = fs.readdirSync(dir).filter(f => f.endsWith(".json")).map(f => {
+    const x = JSON.parse(fs.readFileSync(path.join(dir, f), "utf8"));
+    return (x.status === "done" && (!x.commitSha || x.commitSha.length < 7)) ? x.id : null;
+  }).filter(Boolean);
+  if (bad.length) { console.log(bad.join(",")); process.exit(1); }
 ') || true
 if [ -n "$MISSING" ]; then
   fail "done features missing commitSha: $MISSING"
 fi
 ok "every done feature has commitSha"
 
-bold "[harness-ci 4/6] no AGENTS.md / CLAUDE.md / required docs deleted"
-REQUIRED=(AGENTS.md CLAUDE.md init.sh feature_list.json PROGRESS.md DECISIONS.md docs/HARNESS.md docs/SESSION.md docs/ARCHITECTURE.md docs/RN_PLATFORM.md)
+bold "[harness-ci 4/6] required harness files present"
+REQUIRED=(AGENTS.md CLAUDE.md init.sh PROGRESS.md DECISIONS.md docs/HARNESS.md docs/SESSION.md docs/ARCHITECTURE.md docs/RN_PLATFORM.md features)
 for f in "${REQUIRED[@]}"; do
-  if [ ! -f "$f" ]; then
-    fail "required harness file missing: $f"
+  if [ ! -e "$f" ]; then
+    fail "required harness path missing: $f"
   fi
 done
-ok "all required harness files present"
+ok "all required harness paths present"
 
 bold "[harness-ci 5/6] no committed .env or signing material"
 LEAKS=$(git ls-files | grep -E '(\.env$|\.env\.|\.p12$|\.jks$|\.mobileprovision$|\.key$)' || true)
@@ -73,22 +77,34 @@ bold "[harness-ci 6/6] branch name follows naming standard"
 # In CI prefer GITHUB_HEAD_REF (PR source branch) or GITHUB_REF_NAME.
 # Locally, fall back to `git branch --show-current`.
 BRANCH="${GITHUB_HEAD_REF:-${GITHUB_REF_NAME:-$(git branch --show-current 2>/dev/null || echo '')}}"
+# New shape: <type>/<feature-id> where feature-id = <category>-<slug>
+# (at least one dash). No -NNN suffix. Optional trailing -<extra-slug>
+# segments are allowed for when a feature has multiple branches.
+BRANCH_RE='^(feat|fix|chore|docs)/[a-z][a-z0-9]*(-[a-z][a-z0-9]*)+(-[a-z][a-z0-9]*)*$'
 if [ -z "$BRANCH" ]; then
   ok "branch name not detectable (detached HEAD or no git) — skipped"
 elif echo "$BRANCH" | grep -qE '^(main|master|develop)$'; then
   ok "branch '$BRANCH' is a long-lived trunk — skipped"
 elif echo "$BRANCH" | grep -qE '^(release|hotfix)/'; then
   ok "branch '$BRANCH' is a release/hotfix branch — skipped"
-elif ! echo "$BRANCH" | grep -qE '^(feat|fix|chore|docs)/[a-z][a-z0-9]*(-[a-z][a-z0-9]*)*-[0-9]{3}-[a-z][a-z0-9-]*$'; then
-  fail "branch '$BRANCH' does not match <type>/<feature-id>-<slug> (see docs/HARNESS.md → Naming standards). type ∈ {feat,fix,chore,docs}; feature-id e.g. 'ui-001'; slug 1-3 kebab words."
+elif ! echo "$BRANCH" | grep -qE "$BRANCH_RE"; then
+  fail "branch '$BRANCH' does not match <type>/<feature-id> (see docs/HARNESS.md → Naming standard). type ∈ {feat,fix,chore,docs}; feature-id e.g. 'ui-home', 'ci-actions'."
 else
-  # Verify the embedded feature id exists in feature_list.json.
-  FID=$(echo "$BRANCH" | sed -E 's|^[a-z]+/([a-z][a-z0-9]*(-[a-z][a-z0-9]*)*-[0-9]{3})-.*$|\1|')
-  if ! node -e '
-    const f = JSON.parse(require("fs").readFileSync("feature_list.json","utf8"));
-    if (!f.features.some(x => x.id === process.argv[1])) process.exit(1);
-  ' "$FID"; then
-    fail "branch '$BRANCH' references feature id '$FID' which is not in feature_list.json"
+  # Strip leading type/, walk the remainder; the longest filename in
+  # features/ that prefix-matches is the feature id this branch claims.
+  REST=$(echo "$BRANCH" | sed -E 's|^[a-z]+/||')
+  FID=""
+  while [ -n "$REST" ]; do
+    if [ -f "features/${REST}.json" ]; then
+      FID="$REST"
+      break
+    fi
+    NEXT=$(echo "$REST" | sed -E 's|-[^-]+$||')
+    [ "$NEXT" = "$REST" ] && break
+    REST="$NEXT"
+  done
+  if [ -z "$FID" ]; then
+    fail "branch '$BRANCH' does not reference any feature id in features/"
   fi
   ok "branch '$BRANCH' follows naming standard; feature '$FID' exists"
 fi

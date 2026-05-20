@@ -13,9 +13,9 @@ first. The rest is for humans.
 | Subsystem | Lives in |
 | --- | --- |
 | Instructions | `AGENTS.md` + `docs/*.md` |
-| State | `feature_list.json`, `PROGRESS.md`, `DECISIONS.md`, `git log` |
+| State | `features/*.json`, `PROGRESS.md`, `DECISIONS.md`, `git log` |
 | Verification | `npm run verify` (typecheck + lint + jest + schema) |
-| Scope | `feature_list.json` with `wipLimit: 1` |
+| Scope | `features/` directory (one file per feature), WIP=1 |
 | Session lifecycle | `init.sh` (start), `scripts/check-clean-state.sh` (end) |
 
 ## Quick start
@@ -36,7 +36,7 @@ rn-harness/
 ├── README.md             # humans start here
 ├── PROGRESS.md           # next steps, known issues (small)
 ├── DECISIONS.md          # append-only design log
-├── feature_list.json     # scope (lecture 08)
+├── features/             # one JSON file per feature (lecture 08)
 ├── init.sh               # initialization (lecture 06)
 ├── app/                  # expo-router routes
 ├── components/ hooks/ constants/   # standard Expo scaffold

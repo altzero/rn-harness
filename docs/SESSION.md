@@ -7,8 +7,8 @@ Before ending a session, all four must be true:
 - [ ] A fresh agent can identify recent work in under five minutes
       (`git log` + `gh pr list` are honest).
 - [ ] The startup path is documented (`./init.sh` runs clean).
-- [ ] Unfinished work is identified (`feature_list.json[].status`
-      is current).
+- [ ] Unfinished work is identified (every `features/*.json`'s
+      `status` is current).
 - [ ] The next best task is visible without reading chat logs
       (`PROGRESS.md` → *Next steps*).
 
@@ -17,8 +17,8 @@ If any is false, fix it before you stop.
 ## End-of-session steps
 
 1. `npm run verify` — must be green.
-2. Update `feature_list.json` for any features you touched (status,
-   `passes`, `commitSha`).
+2. Update `features/<id>.json` for any features you touched
+   (`status`, `passes`, `commitSha`).
 3. Update `PROGRESS.md` *Next steps* so the next session can begin
    cold.
 4. Append any non-obvious decisions to `DECISIONS.md`.
@@ -52,7 +52,7 @@ If any is false, fix it before you stop.
 ## If you stop mid-feature with the baseline red
 
 1. Move the in-flight feature's `status` to `blocked` in
-   `feature_list.json`.
+   `features/<id>.json`.
 2. Add a *Known issues* line in `PROGRESS.md` with the failing
    command, the last 30 lines of output, and your hypothesis.
 3. Commit with `wip(blocked): …`.

@@ -1,0 +1,19 @@
+{
+  "id": "harness-simplify",
+  "title": "Simplify harness to doc-aligned form",
+  "category": "harness",
+  "description": "Strip the project back to the lecture-prescribed minimum: split claude-progress.md into PROGRESS.md + DECISIONS.md, delete speculative lib/ and __tests__, delete redundant docs (UI/VERIFICATION/WHY_HARNESS_FOR_RN/E2E_TESTING), slim survivor docs, drop redundant npm scripts.",
+  "verification": [
+    "claude-progress.md is gone; PROGRESS.md and DECISIONS.md exist",
+    "lib/ and __tests__/ are removed",
+    "docs/{UI,VERIFICATION,WHY_HARNESS_FOR_RN,E2E_TESTING}.md are removed",
+    "docs/HARNESS.md, docs/SESSION.md, docs/ARCHITECTURE.md, docs/RN_PLATFORM.md are under ~100 lines each",
+    "npm run verify exits 0",
+    "./init.sh exits 0 (tails PROGRESS.md)"
+  ],
+  "status": "done",
+  "passes": true,
+  "owner": "claude",
+  "commitSha": "be68289",
+  "notes": "Closed via PR #4. Originally id `harness-002`."
+}

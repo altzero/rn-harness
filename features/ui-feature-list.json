@@ -1,0 +1,18 @@
+{
+  "id": "ui-feature-list",
+  "title": "Feature list screen",
+  "category": "ui",
+  "description": "Second tab renders every feature with id, title, status, and a coloured status pill. Read-only.",
+  "verification": [
+    "Tab reachable from the bottom tab bar",
+    "All features in the features/ directory appear",
+    "Status pill colours: todo=grey, in_progress=blue, blocked=red, done=green",
+    "RTL renders correctly (toggle device language to Arabic)",
+    "Render test covers the rendered list"
+  ],
+  "status": "todo",
+  "passes": false,
+  "owner": null,
+  "commitSha": null,
+  "notes": "Use FlatList or FlashList — never .map over a long array of Views. Originally id `ui-002`."
+}

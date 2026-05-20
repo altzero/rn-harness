@@ -31,7 +31,7 @@ native config, Metro, Hermes, or EAS.
 ## File system
 
 - No Node `fs`. Use `expo-file-system` for app data.
-- `require('./feature_list.json')` works at bundle time → frozen object.
+- `require('./features/ui-home.json')` works at bundle time → frozen object.
 
 ## Lists
 
@@ -52,5 +52,4 @@ native config, Metro, Hermes, or EAS.
 ## When platform-touching, it's a new feature
 
 Adding a dep, changing `app.json`, adding a config plugin → log it as
-a new entry in `feature_list.json`, not a side-edit on the current
-feature.
+a new file in `features/`, not a side-edit on the current feature.

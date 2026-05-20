@@ -6,18 +6,26 @@
 
 ## Current state
 
-- Trunk: `main` at the latest commit
+- Trunk: `main` at PR #3 merge (`c8bb4c9`)
 - Baseline: `npm run verify` green
+- Features: `features/` directory (one JSON file per feature)
 
 ## Completed
 
-- `harness-001` — Initial harness setup (PR #1, merged)
-- `e2e-001` — Maestro end-to-end verification (PR #2, merged)
+- `harness-init` — Initial harness setup (PR #1)
+- `e2e-maestro` — Maestro toolchain (PR #2; sim-side verification still
+  pending — flow scaffolded, but local-sim walk hasn't been recorded)
+- `harness-simplify` — Strip to lecture-prescribed minimum (PR #4)
+- `ci-actions` — GitHub Actions for harness gates (PR #3)
 
 ## In progress
 
-- `harness-002` — Simplify harness to doc-aligned form (this branch)
-- `ci-001` — GitHub Actions for harness checks (PR #3, open)
+- `harness-features` — Restructure features to per-file form + drop
+  `-NNN` (this branch)
+
+Also open: `docs-template` (was `docs-001`) on PR #5. After this PR
+merges, PR #5 needs a small rebase: rename the feature file and
+update PROGRESS references.
 
 ## Known issues
 
@@ -25,7 +33,7 @@
 
 ## Next steps
 
-1. Land this PR (`chore/harness-002-simplify`).
-2. Rebase PR #3 on top; update its `harness-ci-checks.sh` to point at
-   `PROGRESS.md` instead of the deleted `claude-progress.md`.
-3. Pick up `ui-001`.
+1. Land this PR (`chore/harness-features`).
+2. Rebase PR #5; rename `docs-001` → `docs-template`; move from
+   `feature_list.json` to `features/docs-template.json`.
+3. Pick up `ui-home` (was `ui-001`).

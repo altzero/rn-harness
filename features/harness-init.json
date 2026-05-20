@@ -1,0 +1,16 @@
+{
+  "id": "harness-init",
+  "title": "Initial harness setup",
+  "category": "harness",
+  "description": "AGENTS.md, CLAUDE.md, init.sh, features/, PROGRESS.md, DECISIONS.md, and docs/ exist. init.sh exits 0 on a fresh clone.",
+  "verification": [
+    "Run ./init.sh from a fresh clone; it exits 0",
+    "Run npm run verify; it exits 0",
+    "scripts/feature-list-check.js validates the features/ directory"
+  ],
+  "status": "done",
+  "passes": true,
+  "owner": "claude",
+  "commitSha": "d04fc81",
+  "notes": "Closed via PR #1. Originally id `harness-001`; renamed in harness-features (no semantic change)."
+}

@@ -1,8 +1,8 @@
 # .maestro/
 
 [Maestro](https://maestro.mobile.dev) flows for end-to-end verification of
-features in `feature_list.json`. Each flow corresponds to one or more
-verification steps in a feature entry.
+features in `features/`. Each flow corresponds to one or more
+verification steps in a feature's JSON file.
 
 ## Why Maestro (and not Detox/Playwright)
 
@@ -49,7 +49,7 @@ bash scripts/run-maestro.sh .maestro/flows/home.yaml
 
 ## Authoring a new flow
 
-1. Decide which feature in `feature_list.json` this flow verifies. The
+1. Decide which feature in `features/` this flow verifies. The
    filename should be `<feature-id>.yaml`.
 2. The first non-comment line **must** set `appId`. Use the project-level
    default (see `config.yaml`) unless this flow targets a different

@@ -49,9 +49,9 @@ bold "[init 5/7] lint health"
 npm run -s lint || fail "lint failed — fix before continuing"
 ok "lint clean"
 
-bold "[init 6/7] feature_list.json sanity"
-node scripts/feature-list-check.js || fail "feature_list.json is invalid"
-ok "feature_list.json parses and is well-formed"
+bold "[init 6/7] features/ sanity"
+node scripts/feature-list-check.js || fail "features/ is invalid"
+ok "features/ parses and is well-formed"
 
 bold "[init 7/7] previous session handoff"
 if [ -f PROGRESS.md ]; then
@@ -65,4 +65,4 @@ fi
 echo
 bold "init complete — environment is healthy"
 echo "Next: run 'npm run verify' to confirm baseline, then pick the next feature"
-echo "      from feature_list.json (status: in_progress, then todo)."
+echo "      from features/ (status: in_progress, then todo)."
