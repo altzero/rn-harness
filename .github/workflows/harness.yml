@@ -12,6 +12,9 @@ name: harness
 on:
   pull_request:
     branches: [main]
+    # Re-run when the `e2e` label is added so the e2e-ios job's `if:` gate
+    # can flip from skipped → run without needing an empty-commit push.
+    types: [opened, synchronize, reopened, labeled]
   push:
     branches: [main]
 
