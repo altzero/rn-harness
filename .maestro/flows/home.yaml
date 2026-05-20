@@ -25,10 +25,17 @@ appId: ${APP_ID}
 - assertVisible: "Welcome!"
 
 # Scaffold step labels — proves the bundle executed, ParallaxScrollView
-# rendered, and the typography components mounted.
+# rendered, and the typography components mounted. Step 1 fits in the
+# initial viewport on iPhone 16 Pro; Steps 2 and 3 require scrolling.
+# `scrollUntilVisible` doubles as proof that ParallaxScrollView is
+# interactive, not just statically rendered.
 - assertVisible: "Step 1: Try it"
-- assertVisible: "Step 2: Explore"
-- assertVisible: "Step 3: Get a fresh start"
+- scrollUntilVisible:
+    element:
+      text: "Step 2: Explore"
+- scrollUntilVisible:
+    element:
+      text: "Step 3: Get a fresh start"
 
 # Tab bar — proves the bottom Tabs navigator mounted.
 - assertVisible:
