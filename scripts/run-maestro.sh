@@ -71,10 +71,14 @@ LOG_FILE="$ART_DIR/${TS}-maestro-${FLOW_BASE}.log"
 
 bold "[maestro 3/4] run flow: $FLOW"
 echo "  log: $LOG_FILE"
+echo "  APP_ID=$APP_ID"
 # Use --format junit + --output for machine-readable result alongside the log.
+# Pass APP_ID via -e so it is visible to Maestro's JS engine; exporting
+# from the shell alone does not populate the engine's globals.
 JUNIT_FILE="$ART_DIR/${TS}-maestro-${FLOW_BASE}.junit.xml"
 set +e
 maestro test "$FLOW" \
+  -e APP_ID="$APP_ID" \
   --format junit \
   --output "$JUNIT_FILE" \
   "$@" 2>&1 | tee "$LOG_FILE"
