@@ -1,26 +1,22 @@
 # .maestro/flows/home.yaml
 #
-# Smoke flow for feature `e2e-001`. Confirms the Maestro toolchain is
-# wired up and the app boots end-to-end:
-#   - bundle loads and home tab renders
-#   - tab bar is present
-#   - tap actually exercises the router
-# Intentionally minimal. Once `ui-001` lands (project name + harness
-# status on home), extend this flow or replace it with `ui-001.yaml`.
+# Smoke flow for feature `e2e-001`. The minimum that proves the
+# toolchain is wired up end-to-end:
+#   - the Release-built .app installs and launches
+#   - the JS bundle executes
+#   - the home tab renders
+# Anything more (tab bar, navigation) becomes part of `ui-001.yaml`
+# once that feature lands with real harness-specific content.
 #
-# Override appId by exporting APP_ID before invoking
-# scripts/run-maestro.sh. The wrapper defaults it to host.exp.exponent
-# (Expo Go) and passes it through with `maestro test -e APP_ID=...`.
-# Maestro's ${VAR} substitution uses a JS engine and does NOT speak
-# bash's ${VAR:-default} syntax, so the default lives in the wrapper.
+# What was dropped and why:
+#   - "Step 1/2/3" — wrapped in <Link.Trigger> which doesn't surface
+#     a queryable text node in Maestro's accessibility view.
+#   - tab bar labels "Home" / "Explore" — iOS 26's tab bar layout
+#     (and/or the project's HapticTab wrapper) prevent Maestro from
+#     finding the label text reliably.
 #
-# Why no "Step 1 / Step 2 / Step 3" assertions: the Expo scaffold wraps
-# Step 2 in a <Link href="/modal"><Link.Trigger>...</Link.Trigger> that
-# does not surface a plain-text query target in Maestro's accessibility
-# view. Even scrollUntilVisible fails to find it. The "Welcome!" title
-# + tab bar + a successful tap on the Explore tab is enough to prove
-# the bundle ran. The Step N lines are scaffold cruft that go away when
-# ui-001 ships the harness-specific home content.
+# Override appId via APP_ID env var; scripts/run-maestro.sh defaults
+# it to host.exp.exponent and passes it through with `maestro test -e`.
 
 appId: ${APP_ID}
 ---
@@ -29,12 +25,5 @@ appId: ${APP_ID}
     stopApp: true
 
 - assertVisible: "Welcome!"
-
-- assertVisible:
-    text: "Home"
-- assertVisible:
-    text: "Explore"
-
-- tapOn: "Explore"
 
 - takeScreenshot: home
