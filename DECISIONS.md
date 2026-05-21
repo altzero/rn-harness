@@ -93,3 +93,30 @@
   by demoting one to `todo` or `done`. Accept this; the alternative
   (mid-branch validators that see across PRs) is too magic for the
   benefit.
+
+## 2026-05-20 — Remove PROGRESS.md; status only in features/
+
+- **What:** Deleted `PROGRESS.md`. Feature status lives only in
+  `features/*.json`. The "next best step" is derived (pick the
+  highest-priority `in_progress`, else first `todo`). "Known issues"
+  move to GitHub Issues or the in-flight feature's `notes` field.
+  Per-branch session context lives in PR descriptions.
+- **Why:** Three consecutive PRs (#3, #6, #7) all had the same
+  post-merge bug — the closed feature was still listed as in_progress
+  somewhere because state was duplicated between `PROGRESS.md` and
+  `features/`. First attempt (trim PROGRESS.md's Completed/In-progress
+  sections) was halfway; the user asked to remove PROGRESS.md entirely
+  and adopt a close-before-merge convention instead.
+- **Close-before-merge convention:** the in-flight feature's `status`
+  is flipped to `done` in the **last commit of the feature branch
+  before merging**, with `commitSha` set to that commit's SHA (the
+  latest implementation commit on the branch). The PR's merge then
+  carries the closed feature into main as part of its own diff. No
+  separate bookkeeping commit. Documented in `docs/SESSION.md`.
+- **Rejected:** auto-update via GitHub Action (adds a bot commit per
+  merge + write token + another loop to debug); pre-merge gate
+  blocking merges when in_progress (annoying when the PR is genuinely
+  WIP).
+- **Trade-off:** if a follow-up issue is found after merge, that's a
+  new feature/`fix`, not "go back and revise the original." The
+  original feature genuinely was complete at the flip point.

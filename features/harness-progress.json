@@ -1,0 +1,23 @@
+{
+  "id": "harness-progress",
+  "title": "Remove PROGRESS.md; track state only in features/",
+  "category": "harness",
+  "description": "Delete PROGRESS.md entirely. Feature status was the only thing keeping it useful, and that status already lives in features/*.json. Establish a 'flip to done before merging' convention so the closed status rides into main as part of the PR's own diff — no follow-up bookkeeping commit. Update AGENTS.md, CLAUDE.md, docs/HARNESS.md, docs/SESSION.md, docs/ARCHITECTURE.md, README, init.sh, scripts/check-clean-state.sh, scripts/harness-ci-checks.sh accordingly.",
+  "verification": [
+    "PROGRESS.md is gone from the repo root",
+    "AGENTS.md startup workflow points at `features/` + `gh pr list` instead of PROGRESS.md",
+    "docs/SESSION.md has a 'close-before-merge convention' section",
+    "scripts/harness-ci-checks.sh dropped step 1 (PROGRESS check), now 5 checks; step 5 (branch name) renumbered correspondingly",
+    "scripts/check-clean-state.sh check 4 now validates that the in-flight feature is flipped to done before merge",
+    "init.sh has 6 steps (was 7); no longer tails PROGRESS.md",
+    "DECISIONS.md has a 2026-05-20 entry explaining the removal",
+    "npm run verify exits 0",
+    "scripts/harness-ci-checks.sh exits 0 on chore/harness-progress",
+    "This feature's status is flipped to done in the same PR's last commit, with commitSha set to the prior implementation commit"
+  ],
+  "status": "done",
+  "passes": true,
+  "owner": "claude",
+  "commitSha": "0bb7e12",
+  "notes": "Closed in the same PR via the new close-before-merge convention. The implementation lives at 0bb7e12; this bookkeeping commit flips status so the PR's merge carries the closed feature into main as part of its own diff. No follow-up commit needed after merge."
+}

@@ -12,8 +12,8 @@ no overreach, no under-finishing, no declaring victory from code that
 doesn't run.
 
 If you are an agent (Claude, Codex, Cursor, …) opening this repo,
-read [`AGENTS.md`](./AGENTS.md) and [`PROGRESS.md`](./PROGRESS.md)
-first. The rest of this file is for humans.
+read [`AGENTS.md`](./AGENTS.md) first, then list `features/`. The
+rest of this file is for humans.
 
 ---
 
@@ -24,7 +24,7 @@ first. The rest of this file is for humans.
 | Subsystem | Lives in |
 | --- | --- |
 | Instructions | `AGENTS.md`, `CLAUDE.md`, `docs/*.md` |
-| State | `features/*.json`, `PROGRESS.md`, `DECISIONS.md`, `git log` |
+| State | `features/*.json`, `DECISIONS.md`, `git log` |
 | Verification | `npm run verify` → typecheck + lint + jest + schema |
 | Scope | `features/` directory (one file per feature), WIP=1 |
 | Session lifecycle | `init.sh` (start), `scripts/check-clean-state.sh` (end) |
@@ -33,17 +33,16 @@ first. The rest of this file is for humans.
 
 - **Expo SDK 54** managed workflow, Expo Router 6, TypeScript strict.
 - **Harness scaffolding** — routing docs (`AGENTS.md`, `CLAUDE.md`),
-  short `PROGRESS.md` (current state) and append-only `DECISIONS.md`
-  (design log), `features/` directory with one JSON file per feature
-  and a filename↔id-enforcing validator.
+  append-only `DECISIONS.md` (design log), `features/` directory with
+  one JSON file per feature and a filename↔id-enforcing validator.
 - **Initialization phase** — `./init.sh` checks Node version, installs
-  deps, runs typecheck + lint + schema, tails `PROGRESS.md`. Fails
-  loudly so the next session knows the foundation is broken.
+  deps, runs typecheck + lint + schema. Fails loudly so the next
+  session knows the foundation is broken.
 - **Baseline gate** — `npm run verify` runs the same checks as `init.sh`
   plus the test suite. Run this before every commit.
 - **End-of-session gate** — `npm run harness:clean-state` checks the
-  working tree, baseline status, debug markers, and that
-  `PROGRESS.md` has a current *Next steps* section.
+  working tree, baseline status, debug markers, and that the in-flight
+  feature is flipped to `done` before merging.
 - **Naming standard** — feature IDs (`<category>-<slug>`, e.g.
   `ui-home`), branch names (`<type>/<feature-id>`, e.g.
   `feat/ui-home`), and commit subjects (`<type>(<feature-id>): …`)
@@ -76,7 +75,7 @@ first. The rest of this file is for humans.
 
 ```bash
 nvm use 22         # any Node ≥ 20
-./init.sh          # install + typecheck + lint + schema; tails PROGRESS.md
+./init.sh          # install + typecheck + lint + schema
 npm run verify     # baseline gate
 npm run start      # i = iOS sim, a = Android emulator, w = web
 ```
@@ -95,12 +94,9 @@ When you spin up a new repo from this template:
    `ui-feature-list.json` entries (they're scaffold-shaped, not your
    features). Add your own feature files; the filename must equal the
    `id` field.
-4. **`PROGRESS.md`** — rewrite the *Next steps* section for your
-   project. Clear Completed / In progress / Known issues to empty
-   states.
-5. **`DECISIONS.md`** — keep the format, clear the entries. Log your
+4. **`DECISIONS.md`** — keep the format, clear the entries. Log your
    own decisions as they come up.
-6. **`package.json`** — change `name` from `rn-harness`.
+5. **`package.json`** — change `name` from `rn-harness`.
 
 The scripts, `docs/`, and harness scaffolding stay as-is — that's the
 point. Don't fork-and-customize the harness; use it as written.
@@ -112,7 +108,6 @@ rn-harness/
 ├── AGENTS.md             # agents start here
 ├── CLAUDE.md             # @imports AGENTS.md
 ├── README.md             # ← replace when using as a template
-├── PROGRESS.md           # next steps, known issues
 ├── DECISIONS.md          # append-only design log
 ├── features/             # one JSON file per feature (Lecture 08)
 ├── init.sh               # initialization phase (Lecture 06)
@@ -139,14 +134,16 @@ rn-harness/
 ## Development loop
 
 ```
-1. ./init.sh                   → environment healthy
-2. read PROGRESS.md            → next best step
-3. pick one feature            → WIP = 1
-4. implement + npm run verify  → typecheck, lint, test, schema
-5. walk verification list      → in a real sim (see .maestro/)
-6. flip feature → done         → status, passes, commitSha
-7. commit, push, open PR       → CI runs the same gates
-8. npm run harness:clean-state → leave a clean state
+1. ./init.sh                       → environment healthy
+2. list features/                  → pick one in_progress, else todo
+3. claim it                        → WIP = 1
+4. implement + npm run verify      → typecheck, lint, test, schema
+5. walk verification list          → in a real sim (see .maestro/)
+6. flip feature → done in last     → status, passes, commitSha (=branch tip)
+   commit BEFORE the merge
+7. commit, push, open PR           → CI runs the same gates
+8. npm run harness:clean-state     → leave a clean state
+9. merge — no follow-up needed     → closed status rides along
 ```
 
 ## Further reading

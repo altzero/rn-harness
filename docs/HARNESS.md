@@ -9,7 +9,7 @@ short adaptation.
 | Subsystem | Lives in |
 | --- | --- |
 | Instructions | `AGENTS.md`, `CLAUDE.md`, `docs/*.md` |
-| State | `features/*.json`, `PROGRESS.md`, `DECISIONS.md`, `git log` |
+| State | `features/*.json`, `DECISIONS.md`, `git log` |
 | Verification | `npm run verify`, `init.sh`, per-feature verification lists |
 | Scope | `features/` directory (one file per feature), WIP=1 |
 | Session lifecycle | `init.sh` (start), `docs/SESSION.md` (end) |
@@ -27,8 +27,9 @@ short adaptation.
 4. **Initialize before every session.** Run `./init.sh`. If the
    baseline is red, fix the foundation before touching new code.
    (Lecture 06)
-5. **Leave a clean state.** PR opened, `PROGRESS.md` reflects reality,
-   verify green. (Lecture 12)
+5. **Leave a clean state.** PR opened with the in-flight feature
+   already flipped to `done` in its last commit, verify green.
+   (Lecture 12)
 
 ## Naming standard
 
@@ -81,7 +82,7 @@ A change is `done` only when every one of these holds:
 - `npm run verify` is green.
 - App starts via `npm run start` on at least one platform (or, for
   non-UI features, the workflow / script the feature adds runs cleanly).
-- `features/<id>.json` updated: `"status": "done"`, `"passes": true`,
-  `"commitSha"` filled in.
-- `PROGRESS.md` updated; any non-obvious decisions appended to
-  `DECISIONS.md`.
+- `features/<id>.json` updated **in the PR's own diff before merge**:
+  `"status": "done"`, `"passes": true`, `"commitSha"` set to the
+  latest implementation commit on the branch.
+- Any non-obvious decisions appended to `DECISIONS.md`.
